@@ -1,0 +1,65 @@
+{
+  "type": "PE",
+  "name": "Negative electrode",
+  "thickness": {"unit": "m", "value": 1.0e-04},
+  "area": {"unit": "m^2", "value": 2.83e-02},
+  "porosity": {"unit": "-", "value": 0.3},
+  "density": {"unit": "kg/m3", "value": 1.65e+03},
+  "bruggeman": {"unit": "-", "value": 1.5},
+  "electronicConductivity": {"unit": "S/m", "value": 1.00e+02},
+  "thermalConductivity": {"unit": "W/mK", "value": 1.7},
+  "heatCapacity": {"unit": "J/kg K", "value": 700},
+  "composition": [
+    {
+      "name": "Active material",
+      "active": 1,
+      "weightFraction": {"unit": "-", "value": "compute"},
+      "volumeFraction": {"unit": "-", "value": 0.6},
+      "density": {"unit": "kg/m3", "value": 1.65e+03},
+      "theoreticalCapacity": {"unit": "Ah/kg", "value": 372},
+      "stoichiometry1": {"unit": "-", "value": 0.9493},
+      "stoichiometry0": {"unit": "-", "value": 0.1832},
+      "particleRadius": {"unit": "m", "value": 1.0e-5},
+      "kineticConstant": {"unit": "m^2.5/mol^0.5 s", 
+                          "type":"constant", 
+                          "value": 2.06e-10,
+                          "arrhenius":{
+                              "activationEnergy": {"unit":"J/mol", "value":37480},
+                              "referenceTemperature": {"unit":"K", "value":298.15}
+                            }},
+      "maximumConcentration": {"unit": "mol/m**3", "value": 24983.26},
+      "initialConcentration": {"unit": "mol/m**3", "value": 19986.60},
+      "diffusionConstant": {"unit": "m**2/s", 
+                            "type":"constant", 
+                            "value": 3.9e-14,
+                            "arrhenius":{
+                              "activationEnergy": {"unit":"J/mol", "value":42770},
+                              "referenceTemperature": {"unit":"K", "value":298.15}
+                            }},
+      "openCircuitPotential": {"unit":["-", "V"],
+                               "type":"function",
+                               "value": "0.194+1.5*exp(-120.0*x)+0.0351*tanh((x-0.286)/0.083)-0.0045*tanh((x-0.849)/0.119)-0.035*tanh((x-0.9233)/0.05)-0.0147*tanh((x-0.5)/0.034)-0.102*tanh((x-0.194)/0.142)-0.022*tanh((x-0.9)/0.0164)-0.011*tanh((x-0.124)/0.0226)+0.0155*tanh((x-0.105)/0.029)"
+      },
+      "filmRadius": {"unit": "m", "value": 5.0e-9},
+      "seiOCP": {"unit": "V", "value": 0.5},
+      "lplOCP": {"unit": "V", "value": 0.0},
+      "seiKineticConstant": {"unit": "m/s", "value": 1.0e-12},
+      "lplExchangeCurrent": {"unit": "A/m**2", "value": 1.0e-3},
+      "seiVolumeFraction": {"unit": "-", "value": 0.05},
+      "seiIonicConductivity": {"unit": "S/m", "value": 5.0e-6},
+      "seiMass": {"unit":"kg/mol", "value":1.62e-1},
+      "seiDensity": {"unit":"kg/m**3", "value":1.69e3},
+      "lplMass": {"unit":"kg/mol", "value":6.94e-3},
+      "lplDensity": {"unit":"kg/m**3", "value":5.34e2},
+      "compute_maximumConcentration": 0,
+      "compute_initialConcentration": 1
+    },
+    {
+      "name": "inactive",
+      "active": 0,
+      "weightFraction": {"unit": "-", "value": "compute"},
+      "volumeFraction": {"unit": "-", "value": 0.1},
+      "density": {"unit": "kg/m3", "value": 1.65e+03}
+    }
+  ]
+}

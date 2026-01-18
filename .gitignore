@@ -1,0 +1,6 @@
+results/
+*.pyc
+*.vtu
+*.pvd
+*.DS_Store
+__pycache__/

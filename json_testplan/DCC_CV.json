@@ -1,0 +1,40 @@
+{
+  "initial values":
+  {
+    "SOC":1.0,
+    "exterior temperature": 298.15
+  },
+  "steps":[
+    {
+      "name":"DCC",
+      "type":"CC",
+      "value":-1.0,
+      "events":[
+        {
+          "type":"Voltage",
+          "value":3.0,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
+          "go to":"Next"
+        }
+        ]
+    },
+    {
+      "name":"DCV",
+      "type":"CV",
+      "events":[
+        {
+          "type":"Current",
+          "value":0.1,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
+          "go to":"Next"
+        },
+        {
+          "type":"Time",
+          "value":3600,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
+          "go to":"Next"
+        }
+      ]
+    }
+  ]
+}

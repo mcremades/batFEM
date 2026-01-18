@@ -1,0 +1,6 @@
+{
+  "name": "Cu",
+  "thickness": {"unit": "m", "value": 2e-5},
+  "area": {"unit": "m^2", "value": 1.05},
+  "density": {"unit": "kg/m3", "value": 8e+03}
+}

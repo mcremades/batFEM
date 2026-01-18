@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": 823},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 28.4}
+  },
+  "negativeCurrentCollector": {
+    "file": "current_collectors/Cu.json"
+  },
+  "negativeElectrode": {
+    "file": "electrodes/NE_Marquis2019.json"
+  },
+  "separator": {
+    "file": "separators/Separator_Marquis2019.json"
+  },
+  "positiveElectrode": {
+    "file": "electrodes/PE_Marquis2019.json"
+  },
+  "positiveCurrentCollector": {
+    "file": "current_collectors/Al.json"
+  },
+  "electrolyte": {
+    "file": "electrolytes/LiPF6_EC:DMC_Marquis2019.json"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "initial values":
+  {
+    "SOC":0.0,
+    "exterior temperature": 298.15
+  },
+  "steps":[
+    {
+      "name":"CCC",
+      "type":"CC",
+      "value": 1.0,
+      "events":[
+        {
+          "type":"Voltage",
+          "value":4.2,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
+          "go to":"Next"
+        }
+        ]
+    },
+    {
+      "name":"C0",
+      "type":"Pause",
+      "events":[
+        {
+          "type":"Time",
+          "value":3600,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
+          "go to":"Next"
+        }
+      ]
+    }
+  ]
+}

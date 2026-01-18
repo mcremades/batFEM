@@ -1,0 +1,16 @@
+{
+  "name": "LiPF6 in EC:DMC",
+  "diffusionConstant": {"unit":["mol/m3", "m**2/s"], 
+                        "type":"function", 
+                        "value": "5.34e-10*exp(-0.65*c_e/1000)"
+                      },
+  "ionicConductivity": {"unit":["mol/m3", "S/m"],
+                        "type":"function",
+                        "value": "0.0911+1.9101*(c_e/1000)-1.052*(c_e/1000)**2+0.1554*(c_e/1000)**3"
+                       },
+  "transferenceNumber": {"unit": "-", "type":"constant", "value": 0.4},
+  "density": {"unit": "kg/m3", "value": 1.2e+03},
+  "initialConcentration": {"unit": "mol/m3", "value": 1.0e+03},
+  "solventDiffusionConstant": {"unit": "m**2/s", "value":2.0e-12},
+  "solventConcentration": {"unit": "mol/L", "value": 4.541e+00}
+}

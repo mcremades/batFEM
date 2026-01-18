@@ -1,0 +1,6 @@
+{
+  "name": "Al",
+  "thickness": {"unit": "m", "value": 1e-5},
+  "area": {"unit": "m^2", "value": 1.05},
+  "density": {"unit": "kg/m3", "value": 5e+03}
+}

@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": 823},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 28.4}
+  },
+  "negativeCurrentCollector": {
+    "file": "current_collectors/Cu.json"
+  },
+  "negativeElectrode": {
+    "file": "electrodes/NE_Prada2013.json"
+  },
+  "separator": {
+    "file": "separators/Separator_Prada2013.json"
+  },
+  "positiveElectrode": {
+    "file": "electrodes/PE_Prada2013.json"
+  },
+  "positiveCurrentCollector": {
+    "file": "current_collectors/Al.json"
+  },
+  "electrolyte": {
+    "file": "electrolytes/LiPF6_EC:EMC_Prada2013.json"
+  }
+}

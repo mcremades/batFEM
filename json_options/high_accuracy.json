@@ -1,0 +1,30 @@
+{
+  "general properties": {
+    "max simulation time": 1.0e+06,
+    "model": "P2D"
+  },
+  "space discretization": {
+    "elements": 15,
+    "FEM order": 2,
+    "SGM order": 3
+  },
+  "time discretization": {
+    "type": "RW",
+    "name": "ROW3P", "mode": "adaptive",
+    "embedded": 0
+  },
+  "timestepping properties":{
+    "initial step size": 1.0e+01,
+    "min step size": 1.0e-06,
+    "max step size": 1.0e+04,
+    "abs tolerance": 1.0e-03,
+    "rel tolerance": 1.0e-03
+  },
+  "output and storage": {
+    "store level": 0,
+    "print level": 1
+  },
+  "multiphysics": {
+    "thermal": 1
+  }
+}
