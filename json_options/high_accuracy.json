@@ -25,6 +25,10 @@
     "print level": 1
   },
   "multiphysics": {
-    "thermal": 1
+    "lumped_thermal": 0,
+    "solve_sei_a": 0,
+    "solve_sei_c": 0,
+    "solve_lpl_a": 0,
+    "solve_lpl_c": 0
   }
 }

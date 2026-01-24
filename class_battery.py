@@ -111,7 +111,8 @@ class Cell:
 
         self.initialTemperature = temperature
         self.exteriorTemperature = temperature
-        self.heatConvection = json['properties']['heatConvectionCoefficient']['value']
+        self.heatConvectionCoefficient = json['properties']['heatConvectionCoefficient']['value']
+        self.heatConvectionArea = json['properties']['heatConvectionArea']['value']
 
         self.negativeCurrentCollector = CurrentCollector(json['negativeCurrentCollector'])
 
@@ -158,7 +159,15 @@ class Cell:
                     + self.positiveElectrode.weight \
                     + self.positiveCurrentCollector.weight
 
-        self.capacity = min(self.negativeElectrode.capacity, self.positiveElectrode.capacity)
+        if "capacity" in json['properties']:
+            self.capacity = json['properties']['capacity']['value']
+        else:
+            self.capacity = min(self.negativeElectrode.capacity, self.positiveElectrode.capacity)
+        
+        if "area" in json['properties']:
+            self.area = json['properties']['area']['value']
+        else:
+            self.area = min(self.negativeElectrode.area, self.positiveElectrode.area)
 
         print(self.negativeElectrode.capacity)
         print(self.positiveElectrode.capacity)
@@ -243,8 +252,9 @@ class PorousElectrode(PorousDomain):
         self.thickness = json_data['thickness']['value']; self.area = json_data['area']['value']
 
         self.porosity = json_data['porosity']['value']
-        self.bruggeman = json_data['bruggeman']['value']
-
+        self.electrolyteBruggeman = json_data['electrolyteBruggeman']['value']
+        self.electrodeBruggeman = json_data['electrodeBruggeman']['value']
+        
         self.electronicConductivity = json_data['electronicConductivity']['value']
         self.thermalConductivity = json_data['thermalConductivity']['value']
         self.specificHeat = json_data['heatCapacity']['value']

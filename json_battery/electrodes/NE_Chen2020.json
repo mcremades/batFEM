@@ -1,12 +1,12 @@
 {
   "type": "PE",
   "name": "Negative electrode",
-  "thickness": {"unit": "m", "value": 3.4e-05},
-  "area": {"unit": "m^2", "value": 1.80e-01},
-  "porosity": {"unit": "-", "value": 0.36},
-  "density": {"unit": "kg/m3", "value": 1.65e+03},
+  "thickness": {"unit": "m", "value": 8.52e-05},
+  "area": {"unit": "m^2", "value": 1.027e-01},
+  "porosity": {"unit": "-", "value": 0.25},
+  "density": {"unit": "kg/m3", "value": 1.657e+03},
   "electrolyteBruggeman": {"unit": "-", "value": 1.5},
-  "electrodeBruggeman": {"unit": "-", "value": 1.5},
+  "electrodeBruggeman": {"unit": "-", "value": 0.0},
   "electronicConductivity": {"unit": "S/m", "value": 2.15e+02},
   "thermalConductivity": {"unit": "W/mK", "value": 1.7},
   "heatCapacity": {"unit": "J/kg K", "value": 700},
@@ -15,12 +15,12 @@
       "name": "Active material",
       "active": 1,
       "weightFraction": {"unit": "-", "value": "compute"},
-      "volumeFraction": {"unit": "-", "value": 0.58},
-      "density": {"unit": "kg/m3", "value": 1.65e+03},
+      "volumeFraction": {"unit": "-", "value": 0.75},
+      "density": {"unit": "kg/m3", "value": 1.657e+03},
       "theoreticalCapacity": {"unit": "Ah/kg", "value": 372},
-      "stoichiometry1": {"unit": "-", "value": 0.8100},
-      "stoichiometry0": {"unit": "-", "value": 0.0176},
-      "particleRadius": {"unit": "m", "value": 5.0e-06},
+      "stoichiometry1": {"unit": "-", "value": 0.9100},
+      "stoichiometry0": {"unit": "-", "value": 0.0260},
+      "particleRadius": {"unit": "m", "value": 5.86e-06},
       "kineticConstant": {"unit": "m^2.5/mol^0.5 s", 
                           "type":"constant", 
                           "value": 6.71e-12,
@@ -28,11 +28,11 @@
                               "activationEnergy": {"unit":"J/mol", "value":35000},
                               "referenceTemperature": {"unit":"K", "value":298.15}
                             }},
-      "maximumConcentration": {"unit": "mol/m**3", "value": 30555.00},
-      "initialConcentration": {"unit": "mol/m**3", "value": 24749.55},
+      "maximumConcentration": {"unit": "mol/m**3", "value": 33133.00},
+      "initialConcentration": {"unit": "mol/m**3", "value": 29866.00},
       "diffusionConstant": {"unit": "m**2/s", 
                             "type":"constant", 
-                            "value": 3.0e-15,
+                            "value": 3.3e-14,
                             "arrhenius":{
                               "activationEnergy": {"unit":"J/mol", "value":0},
                               "referenceTemperature": {"unit":"K", "value":298.15}
@@ -59,8 +59,8 @@
       "name": "inactive",
       "active": 0,
       "weightFraction": {"unit": "-", "value": "compute"},
-      "volumeFraction": {"unit": "-", "value": 0.06},
-      "density": {"unit": "kg/m3", "value": 1.65e+03}
+      "volumeFraction": {"unit": "-", "value": 0.00},
+      "density": {"unit": "kg/m3", "value": 1.657e+03}
     }
   ]
 }

@@ -1,0 +1,10 @@
+{
+  "name": "Prada2013",
+  "thickness": {"unit": "m", "value": 1.2e-5},
+  "area": {"unit": "m^2", "value":  1.027e-01},
+  "density": {"unit": "kg/m3", "value": 0.397e+03},
+  "porosity": {"unit": "-", "value": 0.47},
+  "bruggeman": {"unit": "-", "value": 1.5},
+  "thermalConductivity": {"unit": "W/mK", "value": 0.16},
+  "specificHeat": {"unit": "J/kg K", "value": 700}
+}

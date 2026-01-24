@@ -196,56 +196,56 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         if self.store_level > 0:
 
-            self.c_s_sur_a_pvd = {}
-            self.c_s_sur_a_fnc = {}
-            for state in state_machine.states:
-                self.c_s_sur_a_pvd[state.name] = []
-                self.c_s_sur_a_fnc[state.name] = []
-                for i in range(1000):
-                    self.c_s_sur_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_s_sur/c_s_sur_a.pvd')))
-                    self.c_s_sur_a_fnc[state.name].append(Function(self.V))
-            self.c_s_sur_c_pvd = {}
-            self.c_s_sur_c_fnc = {}
-            for state in state_machine.states:
-                self.c_s_sur_c_pvd[state.name] = []
-                self.c_s_sur_c_fnc[state.name] = []
-                for i in range(1000):
-                    self.c_s_sur_c_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_s_sur/c_s_sur_c.pvd')))
-                    self.c_s_sur_c_fnc[state.name].append(Function(self.V))
+            #self.c_s_sur_a_pvd = {}
+            #self.c_s_sur_a_fnc = {}
+            #for state in state_machine.states:
+            #    self.c_s_sur_a_fnc[state.name] = []
+            #    self.c_s_sur_a_pvd[state.name] = []
+            #    for i in range(1000):
+            #        self.c_s_sur_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_s_sur/c_s_sur_a.pvd')))
+            #        self.c_s_sur_a_fnc[state.name].append(Function(self.V))
+            #self.c_s_sur_c_pvd = {}
+            #self.c_s_sur_c_fnc = {}
+            #for state in state_machine.states:
+            #    self.c_s_sur_c_pvd[state.name] = []
+            #    self.c_s_sur_c_fnc[state.name] = []
+            #    for i in range(1000):
+            #        self.c_s_sur_c_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_s_sur/c_s_sur_c.pvd')))
+            #        self.c_s_sur_c_fnc[state.name].append(Function(self.V))
 
-            #self.c_s_sur_a_pvd = File(self.save_path+'c_s_sur/c_s_sur_a.pvd'); self.c_s_sur_a_fnc = Function(self.V)
-            #self.c_s_sur_c_pvd = File(self.save_path+'c_s_sur/c_s_sur_c.pvd'); self.c_s_sur_c_fnc = Function(self.V)
+            self.c_s_sur_a_pvd = File(self.save_path+'c_s_sur/c_s_sur_a.pvd'); self.c_s_sur_a_fnc = Function(self.V)
+            self.c_s_sur_c_pvd = File(self.save_path+'c_s_sur/c_s_sur_c.pvd'); self.c_s_sur_c_fnc = Function(self.V)
 
             if self.solve_sei_a or self.solve_lpl_a:
-                self.R_film_a_pvd = {}
-                self.R_film_a_fnc = {}
-                for state in state_machine.states:
-                    self.R_film_a_pvd[state.name] = []
-                    self.R_film_a_fnc[state.name] = []
-                    for i in range(1000):
-                        self.R_film_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'R_film/R_film_a.pvd')))
-                        self.R_film_a_fnc[state.name].append(Function(self.V))
-            #    self.R_film_a_pvd = File(self.save_path+'R_film/R_film_a.pvd'); self.R_film_a_fnc = Function(self.V)
-            #    self.eps_e_a_pvd = File(self.save_path+'eps_e/eps_e_a.pvd'); self.eps_e_a_fnc = Function(self.V)
+            #    self.R_film_a_pvd = {}
+            #    self.R_film_a_fnc = {}
+            #    for state in state_machine.states:
+            #        self.R_film_a_pvd[state.name] = []
+            #        self.R_film_a_fnc[state.name] = []
+            #        for i in range(1000):
+            #            self.R_film_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'R_film/R_film_a.pvd')))
+            #            self.R_film_a_fnc[state.name].append(Function(self.V))
+                self.R_film_a_pvd = File(self.save_path+'R_film/R_film_a.pvd'); self.R_film_a_fnc = Function(self.V)
+                self.eps_e_a_pvd = File(self.save_path+'eps_e/eps_e_a.pvd'); self.eps_e_a_fnc = Function(self.V)
 
-            if self.solve_sei_a:
-                self.c_sei_a_pvd = {}
-                self.c_sei_a_fnc = {}
-                for state in state_machine.states:
-                    self.c_sei_a_pvd[state.name] = []
-                    self.c_sei_a_fnc[state.name] = []
-                    for i in range(1000):
-                        self.c_sei_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_sei/c_sei_a.pvd')))
-                        self.c_sei_a_fnc[state.name].append(Function(self.V))
-            if self.solve_lpl_a:
-                self.c_lpl_a_pvd = {}
-                self.c_lpl_a_fnc = {}
-                for state in state_machine.states:
-                    self.c_lpl_a_pvd[state.name] = []
-                    self.c_lpl_a_fnc[state.name] = []
-                    for i in range(1000):
-                        self.c_lpl_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_lpl/c_lpl_a.pvd')))
-                        self.c_lpl_a_fnc[state.name].append(Function(self.V))
+            #if self.solve_sei_a:
+            #    self.c_sei_a_fnc = {}
+            #    self.c_sei_a_pvd = {}
+            #    for state in state_machine.states:
+            #        self.c_sei_a_pvd[state.name] = []
+            #        self.c_sei_a_fnc[state.name] = []
+            #        for i in range(1000):
+            #            self.c_sei_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_sei/c_sei_a.pvd')))
+            #            self.c_sei_a_fnc[state.name].append(Function(self.V))
+            #if self.solve_lpl_a:
+            #    self.c_lpl_a_pvd = {}
+            #    self.c_lpl_a_fnc = {}
+            #    for state in state_machine.states:
+            #        self.c_lpl_a_pvd[state.name] = []
+            #        self.c_lpl_a_fnc[state.name] = []
+            #        for i in range(1000):
+            #            self.c_lpl_a_pvd[state.name].append(File(os.path.join(self.save_path,state.name,str(i),'c_lpl/c_lpl_a.pvd')))
+            #            self.c_lpl_a_fnc[state.name].append(Function(self.V))
 
         if self.store_level > 1:
 
@@ -297,13 +297,13 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         else:
             self.eps_e_c_1 = self.eps_e_c_ini
 
-        self.tortuosity_e_a = self.eps_e_a_1 ** (1 - self.bruggeman_a)
-        self.tortuosity_s_a = (1 - self.eps_e_a_1) ** (1 - self.bruggeman_a)
+        self.tortuosity_e_a = self.eps_e_a_1 ** (1 - self.bruggeman_e_a)
+        self.tortuosity_s_a = (1 - self.eps_e_a_1) ** (1 - self.bruggeman_s_a)
 
-        self.tortuosity_e_s = self.eps_e_s_1 ** (1 - self.bruggeman_s)
+        self.tortuosity_e_s = self.eps_e_s_1 ** (1 - self.bruggeman_e_s)
 
-        self.tortuosity_e_c = self.eps_e_c_1 ** (1 - self.bruggeman_c)
-        self.tortuosity_s_c = (1 - self.eps_e_c_1) ** (1 - self.bruggeman_c)
+        self.tortuosity_e_c = self.eps_e_c_1 ** (1 - self.bruggeman_e_c)
+        self.tortuosity_s_c = (1 - self.eps_e_c_1) ** (1 - self.bruggeman_s_c)
 
         self.build_brg()
         self.build_arr()
@@ -803,7 +803,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             F_T = L * rho * c_p * self.dTdt * self.T * self.dx - self.L_a * self.q_a * self.T * self.dx \
                                                                - self.L_s * self.q_s * self.T * self.dx \
                                                                - self.L_c * self.q_c * self.T * self.dx \
-                                                               + 2. * self.h_t * self.area * (self.T_1 - self.T_ext) * self.T * self.dx
+                                                               + 2. * self.h_t * self.area_t * (self.T_1 - self.T_ext) * self.T * self.dx
         else:
 
             F_T_a = self.L_a * self.rho_a * self.c_p_a * self.dT_adt * self.T_a * self.dx + (1. / self.L_a) * inner(self.k_t_a * grad(self.T_a_1), grad(self.T_a)) * self.dx - self.L_a * self.q_a * self.T_a * self.dx \
@@ -846,27 +846,37 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         if level > 0:
 
-            assign(self.c_s_sur_a_fnc[state_name][state_number], self.u_0.sub(1).sub(0))
-            assign(self.c_s_sur_c_fnc[state_name][state_number], self.u_0.sub(1).sub(1))
+            assign(self.c_s_sur_a_fnc, self.u_0.sub(1).sub(0))
+            assign(self.c_s_sur_c_fnc, self.u_0.sub(1).sub(1))
 
-            self.c_s_sur_a_pvd[state_name][state_number] << (self.c_s_sur_a_fnc[state_name][state_number], t)
-            self.c_s_sur_c_pvd[state_name][state_number] << (self.c_s_sur_c_fnc[state_name][state_number], t)
+            #assign(self.c_s_sur_a_fnc[state_name][state_number], self.u_0.sub(1).sub(0))
+            #assign(self.c_s_sur_c_fnc[state_name][state_number], self.u_0.sub(1).sub(1))
+
+            #self.c_s_sur_a_pvd[state_name][state_number] << (self.c_s_sur_a_fnc[state_name][state_number], t)
+            #self.c_s_sur_c_pvd[state_name][state_number] << (self.c_s_sur_c_fnc[state_name][state_number], t)
+
+            self.c_s_sur_a_pvd << (self.c_s_sur_a_fnc, t)
+            self.c_s_sur_c_pvd << (self.c_s_sur_c_fnc, t)
 
             if self.solve_sei_a or self.solve_lpl_a:
-                assign(self.R_film_a_fnc[state_name][state_number], self.u_0.sub(9))
-                self.R_film_a_pvd[state_name][state_number] << (self.R_film_a_fnc[state_name][state_number], t)
+                assign(self.R_film_a_fnc,self.u_0.sub(9))
+                assign(self.eps_e_a_fnc,self.u_0.sub(10))
+            #    assign(self.R_film_a_fnc[state_name][state_number], self.u_0.sub(9))
+            #    self.R_film_a_pvd[state_name][state_number] << (self.R_film_a_fnc[state_name][state_number], t)
             #    assign(self.eps_e_a_fnc, self.u_0.sub(10))
             #    self.eps_e_a_pvd << (self.eps_e_a_fnc, t)
+                self.R_film_a_pvd << (self.R_film_a_fnc, t)
+                self.eps_e_a_pvd << (self.eps_e_a_fnc, t)
 
             if self.solve_sei_a:
-                assign(self.c_sei_a_fnc[state_name][state_number], self.u_0.sub(12))
-                self.c_sei_a_pvd[state_name][state_number] << (self.c_sei_a_fnc[state_name][state_number], t)
+                 assign(self.c_sei_a_fnc, self.u_0.sub(12))
+            #    assign(self.c_sei_a_fnc[state_name][state_number], self.u_0.sub(12))
+            #    self.c_sei_a_pvd[state_name][state_number] << (self.c_sei_a_fnc[state_name][state_number], t)
             if self.solve_lpl_a:
-                assign(self.c_lpl_a_fnc[state_name][state_number], self.u_0.sub(13))
-                self.c_lpl_a_pvd[state_name][state_number] << (self.c_lpl_a_fnc[state_name][state_number], t)
-
-            #self.R_film_a_pvd << (self.R_film_a_fnc, t)
-            #self.eps_e_a_pvd << (self.eps_e_a_fnc, t)
+                 assign(self.c_lpl_a_fnc, self.u_0.sub(13))
+            #    assign(self.c_lpl_a_fnc[state_name][state_number], self.u_0.sub(13))
+            #    self.c_lpl_a_pvd[state_name][state_number] << (self.c_lpl_a_fnc[state_name][state_number], t)
+            
         if level > 1:
 
             assign(self.c_e_a_fnc, self.u_0.sub(0).sub(0))
@@ -939,7 +949,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
     def get_current(self, x):
         self.u_1.vector()[:] = x
 
-        return assemble(self.lm_app_1 * self.dx)
+        return assemble(self.lm_app_1 * self.area * self.dx)
 
     def get_temperature(self, x):
         self.u_1.vector()[:] = x

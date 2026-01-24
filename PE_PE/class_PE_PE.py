@@ -1,3 +1,4 @@
+from ast import Constant
 from dolfin import *; import numpy; import matplotlib.pyplot as plt; import json#; from dolfin_adjoint import *
 
 import batFEM.class_battery_model
@@ -73,9 +74,12 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.eps_e_s_ini = Constant(cell.separator.porosity)
         self.eps_e_c_ini = Constant(cell.positiveElectrode.porosity)
 
-        self.bruggeman_a = Constant(cell.negativeElectrode.bruggeman)
-        self.bruggeman_s = Constant(cell.separator.bruggeman)
-        self.bruggeman_c = Constant(cell.positiveElectrode.bruggeman)
+        self.bruggeman_e_a = Constant(cell.negativeElectrode.electrolyteBruggeman)
+        self.bruggeman_e_s = Constant(cell.separator.bruggeman)
+        self.bruggeman_e_c = Constant(cell.positiveElectrode.electrolyteBruggeman)
+
+        self.bruggeman_s_a = Constant(cell.negativeElectrode.electrodeBruggeman)
+        self.bruggeman_s_c = Constant(cell.positiveElectrode.electrodeBruggeman)
 
         self.sigma_a = Constant(cell.negativeElectrode.electronicConductivity)
         self.sigma_c = Constant(cell.positiveElectrode.electronicConductivity)
@@ -92,7 +96,8 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.c_p_s = Constant(cell.separator.specificHeat)
         self.c_p_c = Constant(cell.positiveElectrode.specificHeat)
 
-        self.h_t = Constant(cell.heatConvection)
+        self.h_t = Constant(cell.heatConvectionCoefficient)
+        self.area_t = Constant(cell.heatConvectionArea)
 
         self.L_a = Constant(cell.negativeElectrode.thickness)
         self.L_s = Constant(cell.separator.thickness)
@@ -114,21 +119,17 @@ class PE_PE(batFEM.class_battery_model.Model):
             self.D_e_ref = batFEM.class_battery_model.get_interpolation(xy, type, opts)
 
         elif cell.electrolyte.diffusionConstant['type'] == 'function':
-            self.D_e_ref = lambda c_e: eval(cell.electrolyte.diffusionConstant['value'])
-            #raise NameError('User defined functions not handled yet')
+            self.D_e_ref = lambda c_e, T: eval(cell.electrolyte.diffusionConstant['value'])
         elif cell.electrolyte.diffusionConstant['type'] == 'constant':
-            self.D_e_ref = Constant(cell.electrolyte.diffusionConstant['value'])
+            self.D_e_ref = lambda c_e, T: Constant(cell.electrolyte.diffusionConstant['value'])
         else:
             raise NameError('Unknown variable type')
 
         # arrhenius
         self.D_e_Ea = Constant(cell.electrolyte.diffusionConstant_Ea)
         self.D_e_Tref = Constant(cell.electrolyte.diffusionConstant_Tref)
-
-        if callable(self.D_e_ref):
-            self.D_e = lambda c_e, T: self.D_e_ref(c_e) * exp((self.D_e_Ea / self.R) * (1/self.D_e_Tref - 1/T))
-        else:
-            self.D_e = lambda c_e, T: self.D_e_ref * exp((self.D_e_Ea / self.R) * (1/self.D_e_Tref - 1/T))
+        self.D_e = lambda c_e, T: self.D_e_ref(c_e, T) * exp((self.D_e_Ea / self.R) * (1/self.D_e_Tref - 1/T))
+        
 
         if cell.electrolyte.ionicConductivity['type'] == 'interpolate':
             xy = numpy.loadtxt(cell.electrolyte.ionicConductivity['value']); type = cell.electrolyte.ionicConductivity['interpolation_type']
@@ -141,21 +142,17 @@ class PE_PE(batFEM.class_battery_model.Model):
             self.kappa_ref = batFEM.class_battery_model.get_interpolation(xy, type, opts)
 
         elif cell.electrolyte.ionicConductivity['type'] == 'function':
-            self.kappa_ref = lambda c_e: eval(cell.electrolyte.ionicConductivity['value'])
-            #raise NameError('User defined functions not handled yet')
+            self.kappa_ref = lambda c_e, T: eval(cell.electrolyte.ionicConductivity['value'])
         elif cell.electrolyte.ionicConductivity['type'] == 'constant':
-            self.kappa_ref = Constant(cell.electrolyte.ionicConductivity['value'])
+            self.kappa_ref = lambda c_e, T: Constant(cell.electrolyte.ionicConductivity['value'])
         else:
             raise NameError('Unknown variable type')
 
         # arrhenius
         self.kappa_Ea = Constant(cell.electrolyte.ionicConductivity_Ea)
         self.kappa_Tref = Constant(cell.electrolyte.ionicConductivity_Tref)
-
-        if callable(self.kappa_ref):
-            self.kappa = lambda c_e, T: self.kappa_ref(c_e) * exp((self.kappa_Ea / self.R) * (1/self.kappa_Tref - 1/T))
-        else:
-            self.kappa = lambda c_e, T: self.kappa_ref * exp((self.kappa_Ea / self.R) * (1/self.kappa_Tref - 1/T))
+        self.kappa = lambda c_e, T: self.kappa_ref(c_e, T) * exp((self.kappa_Ea / self.R) * (1/self.kappa_Tref - 1/T))
+        
 
         if cell.electrolyte.transferenceNumber['type'] == 'interpolate':
             xy = numpy.loadtxt(cell.electrolyte.transferenceNumber['value']); type = cell.electrolyte.transferenceNumber['interpolation_type']
@@ -249,7 +246,7 @@ class PE_PE(batFEM.class_battery_model.Model):
             self.D_s_c = batFEM.class_battery_model.get_interpolation(xy, type, opts)
 
         elif cell.positiveElectrode.composition[0].diffusionConstant['type'] == 'function':
-            raise NameError('User defined functions not handled yet')
+            self.D_s_c = lambda x: eval(cell.positiveElectrode.composition[0].diffusionConstant['value'])
         elif cell.positiveElectrode.composition[0].diffusionConstant['type'] == 'constant':
             self.D_s_c = Constant(cell.positiveElectrode.composition[0].diffusionConstant['value'])
         else:
@@ -264,7 +261,7 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.R = Constant(8.7350e0)
         self.F = Constant(9.7700e4)
 
-        self.T_ini = Constant(cell.initialTemperature); self.Q = Constant(cell.capacity); self.area = Constant(min(cell.negativeElectrode.area, cell.positiveElectrode.area))
+        self.T_ini = Constant(cell.initialTemperature); self.Q = Constant(cell.capacity); self.area = Constant(cell.area)
         self.T_ext = Constant(cell.exteriorTemperature)
 
         self.alpha = Constant(0.5)

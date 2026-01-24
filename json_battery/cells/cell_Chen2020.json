@@ -2,25 +2,26 @@
   "properties": {
     "heatCapacity": {"unit": "J/(Kg*K)", "value": 1000},
     "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
-    "heatConvectionArea": {"unit": "m**2", "value": 0.18},
-    "area": {"unit": "m^2", "value": 1.80e-01}
+    "heatConvectionArea": {"unit": "m**2", "value": 0.00531},
+    "capacity": {"unit": "Ah", "value": 5},
+    "area": {"unit": "m^2", "value": 0.1027}
   },
   "negativeCurrentCollector": {
     "file": "current_collectors/Cu.json"
   },
   "negativeElectrode": {
-    "file": "electrodes/NE_Prada2013.json"
+    "file": "electrodes/NE_Chen2020.json"
   },
   "separator": {
-    "file": "separators/Separator_Prada2013.json"
+    "file": "separators/Separator_Chen2020.json"
   },
   "positiveElectrode": {
-    "file": "electrodes/PE_Prada2013.json"
+    "file": "electrodes/PE_Chen2020.json"
   },
   "positiveCurrentCollector": {
     "file": "current_collectors/Al.json"
   },
   "electrolyte": {
-    "file": "electrolytes/LiPF6_EC:EMC_Prada2013.json"
+    "file": "electrolytes/LiPF6_EC:EMC_Chen2020.json"
   }
 }

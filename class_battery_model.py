@@ -251,6 +251,16 @@ class Model:
             dir_path = os.path.join(self.save_path, state_name, str(state_number))
             os.makedirs(dir_path, exist_ok=True)
         
+            numpy.savetxt(os.path.join(self.save_path,'time.txt'), self.t_list)
+            numpy.savetxt(os.path.join(self.save_path,'current.txt'), self.i_list)
+            numpy.savetxt(os.path.join(self.save_path,'voltage.txt'), self.v_list)
+            numpy.savetxt(os.path.join(self.save_path,'temperature.txt'), self.k_list)
+
+            numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
+            numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
+
+            numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
+
             numpy.savetxt(os.path.join(dir_path,'time.txt'), self.t_dict[state_name][state_number])
 
             numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])

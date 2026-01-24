@@ -10,26 +10,26 @@
   },
   "time discretization": {
     "type": "RW",
-    "name": "ROW3P", "mode": "adaptive",
+    "name": "ROW4PW2", "mode": "adaptive",
     "embedded": 0
   },
   "timestepping properties":{
     "initial step size": 2.0e+01,
     "min step size": 1.0e-08,
     "max step size": 1.0e+04,
-    "abs tolerance": 2.0e-03,
-    "rel tolerance": 2.0e-03
+    "abs tolerance": 1.0e-03,
+    "rel tolerance": 1.0e-03
   },
   "output and storage": {
-    "store level": 0,
-    "write level": 1,
-    "print level": 1
+    "store level": 2,
+    "write level": 2,
+    "print level": 2
   },
   "multiphysics": {
     "lumped_thermal": 1,
-    "solve_sei_a": 1,
+    "solve_sei_a": 0,
     "solve_sei_c": 0,
-    "solve_lpl_a": 1,
+    "solve_lpl_a": 0,
     "solve_lpl_c": 0
   }
 }

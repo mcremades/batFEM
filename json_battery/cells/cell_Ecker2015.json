@@ -2,25 +2,25 @@
   "properties": {
     "heatCapacity": {"unit": "J/(Kg*K)", "value": 1000},
     "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
-    "heatConvectionArea": {"unit": "m**2", "value": 0.18},
-    "area": {"unit": "m^2", "value": 1.80e-01}
+    "heatConvectionArea": {"unit": "m**2", "value": 0.0172},
+    "area": {"unit": "m^2", "value": 8.58e-03}
   },
   "negativeCurrentCollector": {
     "file": "current_collectors/Cu.json"
   },
   "negativeElectrode": {
-    "file": "electrodes/NE_Prada2013.json"
+    "file": "electrodes/NE_Ecker2015.json"
   },
   "separator": {
-    "file": "separators/Separator_Prada2013.json"
+    "file": "separators/Separator_Ecker2015.json"
   },
   "positiveElectrode": {
-    "file": "electrodes/PE_Prada2013.json"
+    "file": "electrodes/PE_Ecker2015.json"
   },
   "positiveCurrentCollector": {
     "file": "current_collectors/Al.json"
   },
   "electrolyte": {
-    "file": "electrolytes/LiPF6_EC:EMC_Prada2013.json"
+    "file": "electrolytes/LiPF6_EC:DMC_Ecker2015.json"
   }
 }
