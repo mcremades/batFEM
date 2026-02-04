@@ -178,23 +178,31 @@ class Model:
 
     def store(self, t, x, state_name=None, state_number=0):
         
-        self.t_dict[state_name][state_number].append(t); self.t_list.append(t)
-
+        if state_name is not None:
+            self.t_dict[state_name][state_number].append(t); 
+        self.t_list.append(t)
+        
+        
         i = self.get_current(x)
+        if state_name is not None:
+            self.i_dict[state_name][state_number].append(i)
+        self.i_list.append(i)
+
         v = self.get_voltage(x)
+        if state_name is not None:
+            self.v_dict[state_name][state_number].append(v)
+        self.v_list.append(v)
 
         k = self.get_temperature(x)
-
-        self.i_dict[state_name][state_number].append(i); self.i_list.append(i)
-        self.v_dict[state_name][state_number].append(v); self.v_list.append(v)
-
-        self.k_dict[state_name][state_number].append(k); self.k_list.append(k)
+        if state_name is not None:
+            self.k_dict[state_name][state_number].append(k)
+        self.k_list.append(k)
 
     def get_ene(self):
-        return numpy.trapz(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / 3600.
+        return numpy.trapezoid(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / 3600.
 
     def get_pow(self):
-        return numpy.trapz(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / self.t_list[-1]
+        return numpy.trapezoid(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / self.t_list[-1]
 
     def set_voltage(self, v=None):
 
@@ -281,8 +289,8 @@ class Model:
 
         prm = self.solver_1.parameters
 
-        prm["newton_solver"]["absolute_tolerance"] = 1E-6
-        prm["newton_solver"]["relative_tolerance"] = 0E-6
+        prm["newton_solver"]["absolute_tolerance"] = 1E-2
+        prm["newton_solver"]["relative_tolerance"] = 1E-2
 
         try:
             self.solver_1.solve(); self.u_0.assign(self.u_1)
@@ -290,15 +298,16 @@ class Model:
             print('Error in solving')
             return 0
 
-    def solve_ie(self, h=10, v_min=3.0, i_app=30.0, t_f=3600, store_level=0, save_path='results/'):
+    def solve_ie(self, h=10, v_min=3.0, i_app=30.0, t_f=3600, store_level=0, save_path='results/',already_setup=False):
 
         self.save_path = save_path
 
-        try:
+        if not already_setup:
             self.setup()
-        except:
-            print('Error in model setup and initial solution')
-            return 0
+            t_0 = 0.
+        else:
+            t_0 = self.t_list[-1]
+            t_f = t_0 + t_f
 
         self.build_pvd()
 
@@ -309,7 +318,7 @@ class Model:
 
         import time; start = time.time()
 
-        t = 0.
+        t = t_0
 
         self.store(t, self.u_1.vector()[:], store_level)
 
@@ -317,7 +326,7 @@ class Model:
 
         while self.get_voltage(self.u_1.vector()[:]) > v_min:
 
-            if t > 2*t_f:
+            if t > t_f:
                 return 2
 
             self.Deltat.value = h; self.i_app.value = - i_app

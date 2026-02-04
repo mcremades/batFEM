@@ -1,12 +1,14 @@
 {
   "general properties": {
     "max simulation time": 1.0e+09,
-    "model": "P2D"
+    "model": "SPME"
   },
   "space discretization": {
     "elements": 20,
     "FEM order": 1,
-    "SGM order": 2
+    "microscale method":"SGM",
+    "SGM order a": 2,
+    "SGM order c": 2
   },
   "time discretization": {
     "type": "RW",

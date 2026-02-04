@@ -8,12 +8,17 @@ def tanh(x):
 
 class PE_PE(batFEM.class_battery_model.Model):
 
-    def __init__(self, cell, simulation_options):
+    def __init__(self, cell, simulation_options, save_path=None):
+
+        self.store_level = simulation_options['output and storage']['store level']; self.save_path=save_path
+        self.write_level = simulation_options['output and storage']['write level']
 
         self.N_x = simulation_options['space discretization']['elements']; self.FEM_order = simulation_options['space discretization']['FEM order']
 
-        self.SGM_order_a = simulation_options['space discretization']['SGM order']
-        self.SGM_order_c = simulation_options['space discretization']['SGM order']
+        self.microscale_method = simulation_options['space discretization']['microscale method']
+
+        self.SGM_order_a = simulation_options['space discretization']['SGM order a']
+        self.SGM_order_c = simulation_options['space discretization']['SGM order c']
 
         self.lumped_thermal = simulation_options['multiphysics']['lumped_thermal']
 
@@ -318,17 +323,7 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.sigma_a = self.get_brug_s_a(self.sigma_a)
         self.sigma_c = self.get_brug_s_c(self.sigma_c)
 
-    def build_arr(self):
-
-        self.k_0_a = self.get_arr_a(self.k_0_a(split(self.c_s_sur_a_1)[0]/self.c_s_a_max), self.k_0_a_Ea, self.k_0_a_Tref)
-        self.k_0_c = self.get_arr_c(self.k_0_c(split(self.c_s_sur_c_1)[0]/self.c_s_c_max), self.k_0_c_Ea, self.k_0_c_Tref)
-
-        self.D_s_a = self.get_arr_a(self.D_s_a(split(self.c_s_sur_a_1)[0]/self.c_s_a_max), self.D_s_a_Ea, self.D_s_a_Tref)
-        self.D_s_c = self.get_arr_c(self.D_s_c(split(self.c_s_sur_c_1)[0]/self.c_s_c_max), self.D_s_c_Ea, self.D_s_c_Tref)
-
-        self.kappa_D_a = 2 * (self.R * self.T_a_1 / self.F) * (1 -  self.t_p_a) * self.kappa_a
-        self.kappa_D_s = 2 * (self.R * self.T_s_1 / self.F) * (1 -  self.t_p_s) * self.kappa_s
-        self.kappa_D_c = 2 * (self.R * self.T_c_1 / self.F) * (1 -  self.t_p_c) * self.kappa_c
+    
 
     def build_fs(self):
         pass
