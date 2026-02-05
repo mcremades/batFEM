@@ -353,7 +353,264 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             if self.solve_lpl_a:
                 self.j_lpl_a_pvd = File(self.save_path+'j_lpl/j_lpl_a.pvd'); self.j_lpl_a_fnc = Function(self.V)
                 self.eta_lpl_a_pvd = File(self.save_path+'eta_lpl/eta_lpl_a.pvd'); self.eta_lpl_a_fnc = Function(self.V)
+    
+    def get_wf_c_e(self, td=True):
 
+        if td:
+            dc_e_adt = (self.c_e_a_1 - self.c_e_a_0) / self.Deltat
+            dc_e_sdt = (self.c_e_s_1 - self.c_e_s_0) / self.Deltat
+            dc_e_cdt = (self.c_e_c_1 - self.c_e_c_0) / self.Deltat
+        else:
+            dc_e_adt = self.dc_e_adt    
+            dc_e_sdt = self.dc_e_sdt   
+            dc_e_cdt = self.dc_e_cdt   
+
+        F_c_e_a = self.L_a * dc_e_adt * self.c_e_a * self.dx + (1. / self.L_a) * inner((self.D_e_a) * grad(self.c_e_a_1), grad(self.c_e_a / self.eps_e_a_1)) * self.dx \
+                + (self.lm_c_e_as_1/self.eps_e_a_1) * self.c_e_a * self.ds(2)
+
+        for i in range(len(self.eps_s_a)):
+            F_c_e_a -= self.L_a * ((1 - self.t_p_a) / (self.F*self.eps_e_a_1)) * self.j_tot_a[i] * self.c_e_a * self.dx
+
+        F_c_e_s = self.L_s * dc_e_sdt * self.c_e_s * self.dx + (1. / self.L_s) * inner((self.D_e_s) * grad(self.c_e_s_1), grad(self.c_e_s / self.eps_e_s_1)) * self.dx \
+                - (self.lm_c_e_as_1/self.eps_e_s_1) * self.c_e_s * self.ds(1) \
+                + (self.lm_c_e_sc_1/self.eps_e_s_1) * self.c_e_s * self.ds(2)
+
+        F_c_e_c = self.L_c * dc_e_cdt * self.c_e_c * self.dx + (1. / self.L_c) * inner((self.D_e_c) * grad(self.c_e_c_1), grad(self.c_e_c / self.eps_e_c_1)) * self.dx \
+                - (self.lm_c_e_sc_1/self.eps_e_c_1) * self.c_e_c * self.ds(1)
+
+        for i in range(len(self.eps_s_c)):
+            F_c_e_c -= self.L_c * ((1 - self.t_p_c) / (self.F*self.eps_e_c_1)) * self.j_tot_c[i] * self.c_e_c * self.dx
+
+        F_c_e = F_c_e_a + self.F_lm_c_e_as \
+              + F_c_e_s \
+              + F_c_e_c + self.F_lm_c_e_sc
+        
+        return F_c_e
+    
+    def get_wf_c_s(self, td=True):
+        if self.microscale_method == 'SGM':
+            F_c_s_a = 0
+            for j in range(self.SGM_order_a):
+                for i in range(self.SGM_order_a):
+                    if td:
+                        dc_s_adt = (split(self.c_s_a_1)[i] - split(self.c_s_a_0)[i]) / self.Deltat
+                    else:
+                        dc_s_adt = split(self.dc_s_adt)[i]
+                    F_c_s_a = F_c_s_a + self.M_c_s_a[i,j]*dc_s_adt * split(self.c_s_a)[j] * self.dx \
+                                      + (self.D_s_a/self.R_s_a[0]**2)*self.K_c_s_a[i,j] * split(self.c_s_a_1)[i] * split(self.c_s_a)[j] * self.dx
+                F_c_s_a = F_c_s_a + (1./self.R_s_a[0]) * (1. / (self.a_s_a[0]*self.F)) * self.P_c_s_a[j] * self.j_Li_a_1[0] * split(self.c_s_a)[j] * self.dx
+            F_c_s_c = 0
+            for j in range(self.SGM_order_c):
+                for i in range(self.SGM_order_c):
+                    if td:
+                        dc_s_cdt = (split(self.c_s_c_1)[i] - split(self.c_s_c_0)[i]) / self.Deltat
+                    else:
+                        dc_s_cdt = split(self.dc_s_cdt)[i]
+                    F_c_s_c = F_c_s_c + self.M_c_s_c[i,j]*dc_s_cdt * split(self.c_s_c)[j] * self.dx \
+                                      + (self.D_s_c/self.R_s_c[0]**2)*self.K_c_s_c[i,j] * split(self.c_s_c_1)[i] * split(self.c_s_c)[j] * self.dx
+                F_c_s_c = F_c_s_c + (1./self.R_s_c[0]) * (1. / (self.a_s_c[0]*self.F)) * self.P_c_s_c[j] * self.j_Li_c_1[0] * split(self.c_s_c)[j] * self.dx
+            
+            F_c_s = F_c_s_a + self.F_c_s_sur_a + self.F_c_s_avg_a \
+                  + F_c_s_c + self.F_c_s_sur_c + self.F_c_s_avg_c
+        else:
+            
+            F_c_s_a = 0
+            F_c_s_c = 0
+
+            F_c_s_avg_a = 0
+            F_c_s_avg_c = 0
+            for i in range(len(self.eps_s_a)):
+                F_c_s_avg_a = F_c_s_avg_a + split(self.dc_s_avg_adt)[i] * split(self.c_s_avg_a)[i] * self.dx \
+                            + 3 * (self.j_Li_a_1[i] / (self.F * self.a_s_a[i] * self.R_s_a[i])) * split(self.c_s_avg_a)[i] * self.dx
+            for i in range(len(self.eps_s_c)):
+                F_c_s_avg_c = F_c_s_avg_c + split(self.dc_s_avg_cdt)[i] * split(self.c_s_avg_c)[i] * self.dx \
+                            + 3 * (self.j_Li_c_1[i] / (self.F * self.a_s_c[i] * self.R_s_c[i])) * split(self.c_s_avg_c)[i] * self.dx
+
+            F_c_s = F_c_s_a + self.F_c_s_sur_a + F_c_s_avg_a \
+                  + F_c_s_c + self.F_c_s_sur_c + F_c_s_avg_c
+        return F_c_s
+    
+    def get_wf_T(self, td=True):
+
+        if self.lumped_thermal:
+            L = self.L_a + self.L_s + self.L_c
+
+            rho = (self.L_a * self.rho_a + self.L_s * self.rho_s + self.L_c * self.rho_c) / L
+            c_p = (self.L_a * self.c_p_a + self.L_s * self.c_p_s + self.L_c * self.c_p_c) / L
+
+            if td:
+                dTdt = (self.T_1 - self.T_0) / self.Deltat
+            else:
+                dTdt = self.dTdt
+
+            F_T = L * rho * c_p * dTdt * self.T * self.dx - self.L_a * self.q_a * self.T * self.dx \
+                                                          - self.L_s * self.q_s * self.T * self.dx \
+                                                          - self.L_c * self.q_c * self.T * self.dx \
+                                                          + 2. * self.h_t * self.area_t * (self.T_1 - self.T_ext) * self.T * self.dx
+        else: 
+            if td:
+                dT_adt = (self.T_a_1 - self.T_a_0) / self.Deltat
+                dT_sdt = (self.T_s_1 - self.T_s_0) / self.Deltat
+                dT_cdt = (self.T_c_1 - self.T_c_0) / self.Deltat
+            else:
+                dT_adt = self.dT_adt
+                dT_sdt = self.dT_sdt
+                dT_cdt = self.dT_cdt
+
+            F_T_a = self.L_a * self.rho_a * self.c_p_a * dT_adt * self.T_a * self.dx + (1. / self.L_a) * inner(self.k_t_a * grad(self.T_a_1), grad(self.T_a)) * self.dx - self.L_a * self.q_a * self.T_a * self.dx \
+                  + self.lm_T_as_1 * self.T_a * self.ds(2) \
+                  + self.h_t * (self.T_a_1 - self.T_ext) * self.T_a * self.ds(1)
+
+            F_T_s = self.L_s * self.rho_s * self.c_p_s * dT_sdt * self.T_s * self.dx + (1. / self.L_s) * inner(self.k_t_s * grad(self.T_s_1), grad(self.T_s)) * self.dx - self.L_s * self.q_s * self.T_s * self.dx \
+                  - self.lm_T_as_1 * self.T_s * self.ds(1) \
+                  + self.lm_T_sc_1 * self.T_s * self.ds(2)
+
+            F_T_c = self.L_c * self.rho_c * self.c_p_c * dT_cdt * self.T_c * self.dx + (1. / self.L_c) * inner(self.k_t_c * grad(self.T_c_1), grad(self.T_c)) * self.dx - self.L_c * self.q_c * self.T_c * self.dx \
+                  - self.lm_T_sc_1 * self.T_c * self.ds(1) \
+                  + self.h_t * (self.T_c_1 - self.T_ext) * self.T_c * self.ds(2)
+
+            self.F_lm_T_as = self.lm_T_as * self.T_a_1 * self.ds(2) - self.lm_T_as * self.T_s_1 * self.ds(1)
+            self.F_lm_T_sc = self.lm_T_sc * self.T_s_1 * self.ds(2) - self.lm_T_sc * self.T_c_1 * self.ds(1)
+
+            F_T = F_T_a + self.F_lm_T_as \
+                + F_T_s \
+                + F_T_c + self.F_lm_T_sc
+            
+        return F_T
+    
+    def get_wf_eps_e(self,td=True):
+        if self.solve_sei_a or self.solve_lpl_a:
+            if td:
+                deps_e_adt=(self.eps_e_a_1-self.eps_e_a_0) / self.Deltat
+            else:
+                deps_e_adt = self.deps_e_adt
+            F_eps_e_a = deps_e_adt * self.eps_e_a * self.dx
+        else:
+            F_eps_e_a = 0
+
+        if self.solve_sei_a:
+            for i in range(len(self.eps_s_a)):
+                F_eps_e_a -= (self.M_sei[i] / self.rho_sei[i]) * (self.j_sei_a_1[i] / (2.*self.F)) * self.eps_e_a * self.dx
+        if self.solve_lpl_a:
+            for i in range(len(self.eps_s_a)):
+                F_eps_e_a = F_eps_e_a - (self.M_sei[i] / self.rho_sei[i]) * (self.j_lpl_a_1[i] / (2.*self.F)) * (0 + self.beta_lpl) * self.eps_e_a * self.dx \
+                                      - (self.M_lpl[i] / self.rho_lpl[i]) * (self.j_lpl_a_1[i] / (1.*self.F)) * (1 - self.beta_lpl) * self.eps_e_a * self.dx
+
+        if self.solve_sei_c or self.solve_lpl_c:
+            if td:
+                deps_e_cdt=(self.eps_e_c_1-self.eps_e_c_0) / self.Deltat
+            else:
+                deps_e_cdt = self.deps_e_cdt
+            F_eps_e_c = deps_e_cdt * self.eps_e_c * self.dx
+        else:
+            F_eps_e_c = 0
+        
+        if self.solve_sei_c:
+            for i in range(len(self.eps_s_c)):
+                F_eps_e_c -= (self.M_sei[i] / self.rho_sei[i]) * (self.j_sei_c_1[i] / (2.*self.F)) * self.eps_e_c * self.dx
+        if self.solve_lpl_c:
+            for i in range(len(self.eps_s_c)):
+                F_eps_e_c = F_eps_e_c - (self.M_sei[i] / self.rho_sei[i]) * (self.j_lpl_c_1[i] / (2.*self.F)) * (0 + self.beta_lpl) * self.eps_e_c * self.dx \
+                                      - (self.M_lpl[i] / self.rho_lpl[i]) * (self.j_lpl_c_1[i] / (1.*self.F)) * (1 - self.beta_lpl) * self.eps_e_c * self.dx
+
+        F_eps_e = F_eps_e_a \
+                + F_eps_e_c
+        
+        return F_eps_e
+    
+    def get_wf_R(self,td=True):
+
+        F_R_a = 0
+        if self.solve_sei_a or self.solve_lpl_a:
+            for i in range(len(self.eps_s_a)):
+                if td:
+                    dR_film_adt=(self.R_film_a_1[i]-self.R_film_a_0[i]) / self.Deltat
+                else:
+                    dR_film_adt=self.dR_film_adt[i]
+
+                F_R_a += dR_film_adt * self.R_film_a[i] * self.dx
+
+        if self.solve_sei_a:
+            for i in range(len(self.eps_s_a)):
+                F_R_a -= (1./(self.a_s_a[i]*self.F)) * (self.M_sei[i]/self.rho_sei[i]) * (- self.j_sei_a_1[i] / 2. - self.beta_lpl * self.j_lpl_a_1[i] / 2.) * self.R_film_a[i] * self.dx
+        if self.solve_lpl_a:
+            for i in range(len(self.eps_s_a)):
+                F_R_a -= (1./(self.a_s_a[i]*self.F)) * (self.M_lpl[i]/self.rho_lpl[i]) * (- self.j_lpl_a_1[i] * (1 - self.beta_lpl)) * self.R_film_a[i] * self.dx
+
+        F_R_c = 0
+        if self.solve_sei_c or self.solve_lpl_c:
+            for i in range(len(self.eps_s_c)):
+                if td:
+                    dR_film_cdt=(self.R_film_c_1[i]-self.R_film_c_0[i]) / self.Deltat
+                else:
+                    dR_film_cdt=self.dR_film_cdt[i]
+
+                F_R_c += dR_film_cdt * self.R_film_c[i] * self.dx
+
+        if self.solve_sei_c:
+            for i in range(len(self.eps_s_c)):
+                F_R_c -= (1./(self.a_s_c[i]*self.F)) * (self.M_sei[i]/self.rho_sei[i]) * (- self.j_sei_c_1[i] / 2. - self.beta_lpl * self.j_lpl_c_1[i] / 2.) * self.R_film_c[i] * self.dx
+        if self.solve_lpl_c:
+            for i in range(len(self.eps_s_c)):
+                F_R_c -= (1./(self.a_s_c[i]*self.F)) * (self.M_lpl[i]/self.rho_lpl[i]) * (- self.j_lpl_c_1[i] * (1 - self.beta_lpl)) * self.R_film_c[i] * self.dx
+
+        F_R = F_R_a \
+            + F_R_c
+        
+        return F_R
+    
+    def get_wf_c_sei(self,td=True):
+
+        F_c_sei_a = 0
+        if self.solve_sei_a:
+            for i in range(len(self.eps_s_a)):
+                if td:
+                    dc_sei_adt=(self.c_sei_a_1-self.c_sei_a_0) / self.Deltat
+                else:
+                    dc_sei_adt=self.dc_sei_adt[i]
+                F_c_sei_a += (dc_sei_adt + self.j_sei_a_1[i] / (2.*self.F))* self.c_sei_a[i] * self.dx
+        
+        F_c_sei_c = 0
+        if self.solve_sei_c:
+            for i in range(len(self.eps_s_c)):
+                if td:
+                    dc_sei_cdt=(self.c_sei_c_1-self.c_sei_c_0) / self.Deltat
+                else:
+                    dc_sei_cdt=self.dc_sei_cdt[i]
+                F_c_sei_c += (dc_sei_cdt + self.j_sei_c_1[i] / (2.*self.F))* self.c_sei_c[i] * self.dx
+        
+        
+        F_c_sei = F_c_sei_a \
+                + F_c_sei_c
+        
+        return F_c_sei
+
+    def get_wf_c_lpl(self,td=True):
+
+        F_c_lpl_a = 0
+        if self.solve_lpl_a:
+            for i in range(len(self.eps_s_a)):
+                if td:
+                    dc_lpl_adt=(self.c_lpl_a_1-self.c_lpl_a_0) / self.Deltat
+                else:
+                    dc_lpl_adt=self.dc_lpl_adt[i]
+                F_c_lpl_a += (dc_lpl_adt + self.j_lpl_a_1[i] / (1.*self.F)) * self.c_lpl_a[i] * self.dx
+
+        F_c_lpl_c = 0
+        if self.solve_lpl_c:
+            for i in range(len(self.eps_s_c)):
+                if td:
+                    dc_lpl_cdt=(self.c_lpl_c_1-self.c_lpl_c_0) / self.Deltat
+                else:
+                    dc_lpl_cdt=self.dc_lpl_cdt[i]
+                F_c_lpl_c += (dc_lpl_cdt + self.j_lpl_c_1[i] / (1.*self.F)) * self.c_lpl_c[i] * self.dx
+        
+        F_c_lpl = F_c_lpl_a \
+                + F_c_lpl_c
+        
+        return F_c_lpl
+
+    
     def build_wf_0(self):
 
         if self.solve_sei_a or self.solve_lpl_a:
@@ -722,96 +979,25 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
     def build_wf_ie(self):
 
         # c_e
-
-        F_c_e_a = self.L_a * ((self.c_e_a_1 - self.c_e_a_0) / self.Deltat) * self.c_e_a * self.dx + (1. / self.L_a) * inner((self.D_e_a) * grad(self.c_e_a_1), grad(self.c_e_a / self.eps_e_a_1)) * self.dx \
-                + (self.lm_c_e_as_1/self.eps_e_a_1) * self.c_e_a * self.ds(2)
-
-        for i in range(len(self.eps_s_a)):
-            F_c_e_a -= self.L_a * ((1 - self.t_p_a) / (self.F*self.eps_e_a_1)) * self.j_tot_a[i] * self.c_e_a * self.dx
-
-        F_c_e_s = self.L_s * ((self.c_e_s_1 - self.c_e_s_0) / self.Deltat) * self.c_e_s * self.dx + (1. / self.L_s) * inner((self.D_e_s) * grad(self.c_e_s_1), grad(self.c_e_s / self.eps_e_s_1)) * self.dx \
-                - (self.lm_c_e_as_1/self.eps_e_s_1) * self.c_e_s * self.ds(1) \
-                + (self.lm_c_e_sc_1/self.eps_e_s_1) * self.c_e_s * self.ds(2)
-
-        F_c_e_c = self.L_c * ((self.c_e_c_1 - self.c_e_c_0) / self.Deltat) * self.c_e_c * self.dx + (1. / self.L_c) * inner((self.D_e_c) * grad(self.c_e_c_1), grad(self.c_e_c / self.eps_e_c_1)) * self.dx \
-                - (self.lm_c_e_sc_1/self.eps_e_c_1) * self.c_e_c * self.ds(1)
-
-        for i in range(len(self.eps_s_c)):
-            F_c_e_c -= self.L_c * ((1 - self.t_p_c) / (self.F*self.eps_e_c_1)) * self.j_tot_c[i] * self.c_e_c * self.dx
-
-        F_c_e = F_c_e_a + self.F_lm_c_e_as \
-              + F_c_e_s \
-              + F_c_e_c + self.F_lm_c_e_sc
-
-        # c_s
+        F_c_e = self.get_wf_c_e(td=True)
         
-        if self.microscale_method == 'SGM':
-            F_c_s_a = 0
-            for j in range(self.SGM_order_a):
-                for i in range(self.SGM_order_a):
-                    dc_s_adt = (split(self.c_s_a_1)[i] - split(self.c_s_a_0)[i]) / self.Deltat
-                    F_c_s_a = F_c_s_a + self.M_c_s_a[i,j]*dc_s_adt * split(self.c_s_a)[j] * self.dx \
-                                      + (self.D_s_a/self.R_s_a[0]**2)*self.K_c_s_a[i,j] * split(self.c_s_a_1)[i] * split(self.c_s_a)[j] * self.dx
-                F_c_s_a = F_c_s_a + (1./self.R_s_a[0]) * (1. / (self.a_s_a[0]*self.F)) * self.P_c_s_a[j] * self.j_Li_a_1[0] * split(self.c_s_a)[j] * self.dx
-            F_c_s_c = 0
-            for j in range(self.SGM_order_c):
-                for i in range(self.SGM_order_c):
-                    dc_s_cdt = (split(self.c_s_c_1)[i] - split(self.c_s_c_0)[i]) / self.Deltat
-                    F_c_s_c = F_c_s_c + self.M_c_s_c[i,j]*dc_s_cdt * split(self.c_s_c)[j] * self.dx \
-                                      + (self.D_s_c/self.R_s_c[0]**2)*self.K_c_s_c[i,j] * split(self.c_s_c_1)[i] * split(self.c_s_c)[j] * self.dx
-                F_c_s_c = F_c_s_c + (1./self.R_s_c[0]) * (1. / (self.a_s_c[0]*self.F)) * self.P_c_s_c[j] * self.j_Li_c_1[0] * split(self.c_s_c)[j] * self.dx
-            
-            F_c_s = F_c_s_a + self.F_c_s_sur_a + self.F_c_s_avg_a \
-                  + F_c_s_c + self.F_c_s_sur_c + self.F_c_s_avg_c
-        else:
-            
-            F_c_s_a = 0
-            F_c_s_c = 0
-            F_c_s_avg_a = 0
-            F_c_s_avg_c = 0
-            for i in range(len(self.eps_s_a)):
-                dc_s_avg_adt = (split(self.c_s_avg_a_1)[i] - split(self.c_s_avg_a_0)[i]) / self.Deltat
-                F_c_s_avg_a = F_c_s_avg_a + dc_s_avg_adt * split(self.c_s_avg_a)[i] * self.dx \
-                            + 3 * (self.j_Li_a_1[i] / (self.F * self.a_s_a[i] * self.R_s_a[i])) * split(self.c_s_avg_a)[i] * self.dx
-            for i in range(len(self.eps_s_c)):
-                dc_s_avg_cdt = (split(self.c_s_avg_c_1)[i] - split(self.c_s_avg_c_0)[i]) / self.Deltat
-                F_c_s_avg_c = F_c_s_avg_c + dc_s_avg_cdt * split(self.c_s_avg_c)[i] * self.dx \
-                            + 3 * (self.j_Li_c_1[i] / (self.F * self.a_s_c[i] * self.R_s_c[i])) * split(self.c_s_avg_c)[i] * self.dx
+        # c_s
+        F_c_s = self.get_wf_c_s(td=True)
 
-            F_c_s = F_c_s_a + self.F_c_s_sur_a + F_c_s_avg_a \
-                  + F_c_s_c + self.F_c_s_sur_c + F_c_s_avg_c
-             
+        # eps_e
+        F_eps_e = self.get_wf_eps_e(td=True)
+
         # T
+        F_T = self.get_wf_T(td=True)
 
-        if self.lumped_thermal:
-            L = self.L_a + self.L_s + self.L_c
-            rho = (self.L_a * self.rho_a + self.L_s * self.rho_s + self.L_c * self.rho_c) / L
-            c_p = (self.L_a * self.c_p_a + self.L_s * self.c_p_s + self.L_c * self.c_p_c) / L
+        # R_film
+        F_R = self.get_wf_R(td=True)
 
-            F_T = L * rho * c_p * ((self.T_1 - self.T_0) / self.Deltat) * self.T * self.dx - self.L_a * self.q_a * self.T * self.dx \
-                                                                                           - self.L_s * self.q_s * self.T * self.dx \
-                                                                                           - self.L_c * self.q_c * self.T * self.dx \
-                                                                                           + 2. * self.h_t * self.area_t * (self.T_1 - self.T_ext) * self.T * self.dx
-        else:
+        # c_sei
+        F_c_sei = self.get_wf_c_sei(td=True)
 
-            F_T_a = self.L_a * self.rho_a * self.c_p_a * ((self.T_a_1 - self.T_a_0) / self.Deltat) * self.T_a * self.dx + (1. / self.L_a) * inner(self.k_t_a * grad(self.T_a_1), grad(self.T_a)) * self.dx - self.L_a * self.q_a * self.T_a * self.dx \
-                  + self.lm_T_as_1 * self.T_a * self.ds(2) \
-                  + self.h_t * (self.T_a_1 - self.T_ext) * self.T_a * self.ds(1)
-
-            F_T_s = self.L_s * self.rho_s * self.c_p_s * ((self.T_s_1 - self.T_s_0) / self.Deltat) * self.T_s * self.dx + (1. / self.L_s) * inner(self.k_t_s * grad(self.T_s_1), grad(self.T_s)) * self.dx - self.L_s * self.q_s * self.T_s * self.dx \
-                  - self.lm_T_as_1 * self.T_s * self.ds(1) \
-                  + self.lm_T_sc_1 * self.T_s * self.ds(2)
-
-            F_T_c = self.L_c * self.rho_c * self.c_p_c * ((self.T_c_1 - self.T_c_0) / self.Deltat) * self.T_c * self.dx + (1. / self.L_c) * inner(self.k_t_c * grad(self.T_c_1), grad(self.T_c)) * self.dx - self.L_c * self.q_c * self.T_c * self.dx \
-                  - self.lm_T_sc_1 * self.T_c * self.ds(1) \
-                  + self.h_t * (self.T_c_1 - self.T_ext) * self.T_c * self.ds(2)
-
-            self.F_lm_T_as = self.lm_T_as * self.T_a_1 * self.ds(2) - self.lm_T_as * self.T_s_1 * self.ds(1)
-            self.F_lm_T_sc = self.lm_T_sc * self.T_s_1 * self.ds(2) - self.lm_T_sc * self.T_c_1 * self.ds(1)
-
-            F_T = F_T_a + self.F_lm_T_as \
-                + F_T_s \
-                + F_T_c + self.F_lm_T_sc
+        # c_lpl
+        F_c_lpl = self.get_wf_c_lpl(td=True)
 
         self.F_var_1 = F_c_e + F_c_s \
                      + self.F_phi_e \
@@ -819,163 +1005,38 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                      + self.F_j_Li \
                      + F_T + self.F_lm_phi + self.F_lm_app \
                      + self.F_j_sei_a \
-                     + self.F_j_lpl_a
+                     + self.F_j_lpl_a \
+                     + F_R \
+                     + self.F_c_r \
+                     + F_eps_e \
+                     + F_c_sei \
+                     + F_c_lpl
 
         self.J_var_1 = derivative(self.F_var_1, self.u_1)
 
     def build_wf_rk(self):
 
         # c_e
-
-        F_c_e_a = self.L_a * self.dc_e_adt * self.c_e_a * self.dx + (1. / self.L_a) * inner((self.D_e_a) * grad(self.c_e_a_1), grad(self.c_e_a / self.eps_e_a_1)) * self.dx \
-                + (self.lm_c_e_as_1/self.eps_e_a_1) * self.c_e_a * self.ds(2)
-
-        for i in range(len(self.eps_s_a)):
-            F_c_e_a -= self.L_a * ((1 - self.t_p_a) / (self.F*self.eps_e_a_1)) * self.j_tot_a[i] * self.c_e_a * self.dx
-
-        F_c_e_s = self.L_s * self.dc_e_sdt * self.c_e_s * self.dx + (1. / self.L_s) * inner((self.D_e_s) * grad(self.c_e_s_1), grad(self.c_e_s / self.eps_e_s_1)) * self.dx \
-                - (self.lm_c_e_as_1/self.eps_e_s_1) * self.c_e_s * self.ds(1) \
-                + (self.lm_c_e_sc_1/self.eps_e_s_1) * self.c_e_s * self.ds(2)
-
-        F_c_e_c = self.L_c * self.dc_e_cdt * self.c_e_c * self.dx + (1. / self.L_c) * inner((self.D_e_c) * grad(self.c_e_c_1), grad(self.c_e_c / self.eps_e_c_1)) * self.dx \
-                - (self.lm_c_e_sc_1/self.eps_e_c_1) * self.c_e_c * self.ds(1)
-
-        for i in range(len(self.eps_s_c)):
-            F_c_e_c -= self.L_c * ((1 - self.t_p_c) / (self.F*self.eps_e_c_1)) * self.j_tot_c[i] * self.c_e_c * self.dx
-
-        F_c_e = F_c_e_a + self.F_lm_c_e_as \
-              + F_c_e_s \
-              + F_c_e_c + self.F_lm_c_e_sc
+        F_c_e = self.get_wf_c_e(td=False)
 
         # c_s
-
-        if self.microscale_method == 'SGM':
-            F_c_s_a = 0
-            for j in range(self.SGM_order_a):
-                for i in range(self.SGM_order_a):
-                    dc_s_adt = split(self.dc_s_adt)[i]
-                    F_c_s_a = F_c_s_a + self.M_c_s_a[i,j]*dc_s_adt * split(self.c_s_a)[j] * self.dx \
-                                      + (self.D_s_a/self.R_s_a[0]**2)*self.K_c_s_a[i,j] * split(self.c_s_a_1)[i] * split(self.c_s_a)[j] * self.dx
-                F_c_s_a = F_c_s_a + (1./self.R_s_a[0]) * (1. / (self.a_s_a[0]*self.F)) * self.P_c_s_a[j] * self.j_Li_a_1[0] * split(self.c_s_a)[j] * self.dx
-            F_c_s_c = 0
-            for j in range(self.SGM_order_c):
-                for i in range(self.SGM_order_c):
-                    dc_s_cdt = split(self.dc_s_cdt)[i]
-                    F_c_s_c = F_c_s_c + self.M_c_s_c[i,j]*dc_s_cdt * split(self.c_s_c)[j] * self.dx \
-                                      + (self.D_s_c/self.R_s_c[0]**2)*self.K_c_s_c[i,j] * split(self.c_s_c_1)[i] * split(self.c_s_c)[j] * self.dx
-                F_c_s_c = F_c_s_c + (1./self.R_s_c[0]) * (1. / (self.a_s_c[0]*self.F)) * self.P_c_s_c[j] * self.j_Li_c_1[0] * split(self.c_s_c)[j] * self.dx
-            
-            F_c_s = F_c_s_a + self.F_c_s_sur_a + self.F_c_s_avg_a \
-                  + F_c_s_c + self.F_c_s_sur_c + self.F_c_s_avg_c
-        else:
-            
-            F_c_s_a = 0
-            F_c_s_c = 0
-
-            F_c_s_avg_a = 0
-            F_c_s_avg_c = 0
-            for i in range(len(self.eps_s_a)):
-                F_c_s_avg_a = F_c_s_avg_a + split(self.dc_s_avg_adt)[i] * split(self.c_s_avg_a)[i] * self.dx \
-                            + 3 * (self.j_Li_a_1[i] / (self.F * self.a_s_a[i] * self.R_s_a[i])) * split(self.c_s_avg_a)[i] * self.dx
-            for i in range(len(self.eps_s_c)):
-                F_c_s_avg_c = F_c_s_avg_c + split(self.dc_s_avg_cdt)[i] * split(self.c_s_avg_c)[i] * self.dx \
-                            + 3 * (self.j_Li_c_1[i] / (self.F * self.a_s_c[i] * self.R_s_c[i])) * split(self.c_s_avg_c)[i] * self.dx
-
-            F_c_s = F_c_s_a + self.F_c_s_sur_a + F_c_s_avg_a \
-                  + F_c_s_c + self.F_c_s_sur_c + F_c_s_avg_c
-
-        # R
-        F_R_a = 0
-        F_R_c = 0
-
-        #TODO
-        self.beta_lpl = 0
-
-        if self.solve_sei_a or self.solve_lpl_a:
-            for i in range(len(self.eps_s_a)):
-                F_R_a += self.dR_film_adt[i] * self.R_film_a[i] * self.dx
-
-        if self.solve_sei_a:
-            for i in range(len(self.eps_s_a)):
-                F_R_a -= (1./(self.a_s_a[i]*self.F)) * (self.M_sei[i]/self.rho_sei[i]) * (- self.j_sei_a_1[i] / 2. - self.beta_lpl * self.j_lpl_a_1[i] / 2.) * self.R_film_a[i] * self.dx
-        if self.solve_lpl_a:
-            for i in range(len(self.eps_s_a)):
-                F_R_a -= (1./(self.a_s_a[i]*self.F)) * (self.M_lpl[i]/self.rho_lpl[i]) * (- self.j_lpl_a_1[i] * (1 - self.beta_lpl)) * self.R_film_a[i] * self.dx
-
-        if self.solve_sei_c or self.solve_lpl_c:
-            for i in range(len(self.eps_s_c)):
-                F_R_c += self.dR_film_cdt[i] * self.R_film_c[i] * self.dx
-
-        F_R = F_R_a \
-            + F_R_c
-
-        # c_sei
-        self.F_c_sei_a = 0
-        if self.solve_sei_a:
-            for i in range(len(self.eps_s_a)):
-                self.F_c_sei_a += (self.dc_sei_adt[i] + self.j_sei_a_1[i] / (2.*self.F))* self.c_sei_a[i] * self.dx
-        # c_lpl
-        self.F_c_lpl_a = 0
-        if self.solve_lpl_a:
-            for i in range(len(self.eps_s_a)):
-                self.F_c_lpl_a += (self.dc_lpl_adt[i] + self.j_lpl_a_1[i] / (1.*self.F)) * self.c_lpl_a[i] * self.dx
-
+        F_c_s = self.get_wf_c_s(td=False)
+        
         # eps_e
-
-        if self.solve_sei_a or self.solve_lpl_a:
-            F_eps_e_a = self.deps_e_adt * self.eps_e_a * self.dx
-        else:
-            F_eps_e_a = 0
-
-        if self.solve_sei_a:
-            for i in range(len(self.eps_s_a)):
-                F_eps_e_a -= (self.M_sei[i] / self.rho_sei[i]) * (self.j_sei_a_1[i] / (2.*self.F)) * self.eps_e_a * self.dx
-        if self.solve_lpl_a:
-            for i in range(len(self.eps_s_a)):
-                F_eps_e_a = F_eps_e_a - (self.M_sei[i] / self.rho_sei[i]) * (self.j_lpl_a_1[i] / (2.*self.F)) * (0 + self.beta_lpl) * self.eps_e_a * self.dx \
-                                      - (self.M_lpl[i] / self.rho_lpl[i]) * (self.j_lpl_a_1[i] / (1.*self.F)) * (1 - self.beta_lpl) * self.eps_e_a * self.dx
-
-
-        if self.solve_sei_c or self.solve_lpl_c:
-            F_eps_e_c = self.deps_e_cdt * self.eps_e_c * self.dx
-        else:
-            F_eps_e_c = 0
-
-        F_eps_e = F_eps_e_a \
-                + F_eps_e_c
-
+        F_eps_e = self.get_wf_eps_e(td=False)
+        
         # T
+        F_T = self.get_wf_T(td=False)
 
-        if self.lumped_thermal:
-            L = self.L_a + self.L_s + self.L_c
-            rho = (self.L_a * self.rho_a + self.L_s * self.rho_s + self.L_c * self.rho_c) / L
-            c_p = (self.L_a * self.c_p_a + self.L_s * self.c_p_s + self.L_c * self.c_p_c) / L
+        # R_film
+        F_R = self.get_wf_R(td=False)
+        
+        # c_sei
+        F_c_sei = self.get_wf_c_sei(td=False)
 
-            F_T = L * rho * c_p * self.dTdt * self.T * self.dx - self.L_a * self.q_a * self.T * self.dx \
-                                                               - self.L_s * self.q_s * self.T * self.dx \
-                                                               - self.L_c * self.q_c * self.T * self.dx \
-                                                               + 2. * self.h_t * self.area_t * (self.T_1 - self.T_ext) * self.T * self.dx
-        else:
-
-            F_T_a = self.L_a * self.rho_a * self.c_p_a * self.dT_adt * self.T_a * self.dx + (1. / self.L_a) * inner(self.k_t_a * grad(self.T_a_1), grad(self.T_a)) * self.dx - self.L_a * self.q_a * self.T_a * self.dx \
-                  + self.lm_T_as_1 * self.T_a * self.ds(2) \
-                  + self.h_t * (self.T_a_1 - self.T_ext) * self.T_a * self.ds(1)
-
-            F_T_s = self.L_s * self.rho_s * self.c_p_s * self.dT_sdt * self.T_s * self.dx + (1. / self.L_s) * inner(self.k_t_s * grad(self.T_s_1), grad(self.T_s)) * self.dx - self.L_s * self.q_s * self.T_s * self.dx \
-                  - self.lm_T_as_1 * self.T_s * self.ds(1) \
-                  + self.lm_T_sc_1 * self.T_s * self.ds(2)
-
-            F_T_c = self.L_c * self.rho_c * self.c_p_c * self.dT_cdt * self.T_c * self.dx + (1. / self.L_c) * inner(self.k_t_c * grad(self.T_c_1), grad(self.T_c)) * self.dx - self.L_c * self.q_c * self.T_c * self.dx \
-                  - self.lm_T_sc_1 * self.T_c * self.ds(1) \
-                  + self.h_t * (self.T_c_1 - self.T_ext) * self.T_c * self.ds(2)
-
-            self.F_lm_T_as = self.lm_T_as * self.T_a_1 * self.ds(2) - self.lm_T_as * self.T_s_1 * self.ds(1)
-            self.F_lm_T_sc = self.lm_T_sc * self.T_s_1 * self.ds(2) - self.lm_T_sc * self.T_c_1 * self.ds(1)
-
-            F_T = F_T_a + self.F_lm_T_as \
-                + F_T_s \
-                + F_T_c + self.F_lm_T_sc
-
+        # c_lpl
+        F_c_lpl = self.get_wf_c_lpl(td=False)
+        
         self.F_var = F_c_e + F_c_s \
                    + self.F_phi_e \
                    + self.F_phi_s \
@@ -986,8 +1047,8 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                    + F_R \
                    + self.F_c_r \
                    + F_eps_e \
-                   + self.F_c_sei_a \
-                   + self.F_c_lpl_a
+                   + F_c_sei \
+                   + F_c_lpl
 
     def store(self, t, x, level=0, state_name=None, state_number=0):
 
