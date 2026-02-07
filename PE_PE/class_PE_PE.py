@@ -34,6 +34,15 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.i_list = []
         self.v_list = []
 
+        self.xs_avg_a_list=[]
+        self.xs_avg_c_list=[]
+        self.xs_sur_a_list=[]
+        self.xs_sur_c_list=[]
+
+        self.ce_avg_a_list=[]
+        self.ce_avg_s_list=[]
+        self.ce_avg_c_list=[]
+
         self.k_list = []
         self.q_list = []
 
@@ -87,7 +96,9 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.bruggeman_s_c = Constant(cell.positiveElectrode.electrodeBruggeman)
 
         self.sigma_a = Constant(cell.negativeElectrode.electronicConductivity)
+        self.compute_sigma_a_eff = cell.negativeElectrode.compute_effective_electronicConductivity
         self.sigma_c = Constant(cell.positiveElectrode.electronicConductivity)
+        self.compute_sigma_c_eff = cell.negativeElectrode.compute_effective_electronicConductivity
 
         self.k_t_a = Constant(cell.negativeElectrode.thermalConductivity)
         self.k_t_s = Constant(cell.separator.thermalConductivity)
@@ -97,9 +108,9 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.rho_s = Constant(cell.separator.density)
         self.rho_c = Constant(cell.positiveElectrode.density)
 
-        self.c_p_a = Constant(cell.negativeElectrode.specificHeat)
-        self.c_p_s = Constant(cell.separator.specificHeat)
-        self.c_p_c = Constant(cell.positiveElectrode.specificHeat)
+        self.c_p_a = Constant(cell.negativeElectrode.heatCapacity)
+        self.c_p_s = Constant(cell.separator.heatCapacity)
+        self.c_p_c = Constant(cell.positiveElectrode.heatCapacity)
 
         self.h_t = Constant(cell.heatConvectionCoefficient)
         self.area_t = Constant(cell.heatConvectionArea)
@@ -320,11 +331,11 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.t_p_s = self.t_p(self.c_e_s_1)
         self.t_p_c = self.t_p(self.c_e_c_1)
 
-        self.sigma_a = self.get_brug_s_a(self.sigma_a)
-        self.sigma_c = self.get_brug_s_c(self.sigma_c)
-
+        if self.compute_sigma_a_eff:
+            self.sigma_a = self.get_brug_s_a(self.sigma_a)
+        if self.compute_sigma_c_eff:
+            self.sigma_c = self.get_brug_s_c(self.sigma_c)
     
-
     def build_fs(self):
         pass
 

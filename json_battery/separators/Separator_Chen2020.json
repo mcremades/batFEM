@@ -6,5 +6,5 @@
   "porosity": {"unit": "-", "value": 0.47},
   "bruggeman": {"unit": "-", "value": 1.5},
   "thermalConductivity": {"unit": "W/mK", "value": 0.16},
-  "specificHeat": {"unit": "J/kg K", "value": 700}
+  "heatCapacity": {"unit": "J/kg K", "value": 700}
 }

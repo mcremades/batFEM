@@ -51,7 +51,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         if self.solve_sei_a:
             assign(self.u_0.sub(12), project((self.rho_sei[0] / self.M_sei[0]) * self.a_s_a[0] * self.R_film_a_0[0], self.V))
 
-
     def build_fs(self):
 
         P1 = FiniteElement('CG', self.mesh.ufl_cell(), 1)
@@ -200,23 +199,23 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         if self.microscale_method == 'SGM':
             if self.solve_sei_a:
                 if self.solve_lpl_a:
-                    self.dc_edt, self.dc_sdt, self.dc_s_avgdt, self.dc_s_surdt,self.dphi_edt, self.dphi_sdt, self.dj_Lidt, self.dTdt, self.dlm_phidt, self.dlm_appdt, self.dR_film_adt, self.deps_e_adt, self.dc_ec_s_adt, self.dc_sei_adt, self.dc_lpl_adt, self.dj_sei_adt, self.dj_lpl_adt = split(self.dudt)
-                    self.c_e_1, self.c_s_1, self.c_s_avg_1, self.c_s_sur_1, self.phi_e_1, self.phi_s_1, self.j_Li_1, self.T_1, self.lm_phi_1, self.lm_app_1, self.R_film_a_1, self.eps_e_a_1, self.c_ec_s_a_1, self.c_sei_a_1, self.c_lpl_a_1, self.j_sei_a_1, self.j_lpl_a_1 = split(self.u_1)
-                    self.c_e_0, self.c_s_0, self.c_s_avg_0, self.c_s_sur_0, self.phi_e_0, self.phi_s_0, self.j_Li_0, self.T_0, self.lm_phi_0, self.lm_app_0, self.R_film_a_0, self.eps_e_a_0, self.c_ec_s_a_0, self.c_sei_a_0, self.c_lpl_a_0, self.j_sei_a_0, self.j_lpl_a_0 = split(self.u_0)
-                    self.c_e, self.c_s, self.c_s_avg, self.c_s_sur, self.phi_e, self.phi_s, self.j_Li, self.T, self.lm_phi, self.lm_app, self.R_film_a, self.eps_e_a, self.c_ec_s_a, self.c_sei_a, self.c_lpl_a, self.j_sei_a, self.j_lpl_a = split(self.u)
+                    self.dc_edt, self.dc_sdt, self.dc_s_surdt, self.dc_s_svgdt,self.dphi_edt, self.dphi_sdt, self.dj_Lidt, self.dTdt, self.dlm_phidt, self.dlm_appdt, self.dR_film_adt, self.deps_e_adt, self.dc_ec_s_adt, self.dc_sei_adt, self.dc_lpl_adt, self.dj_sei_adt, self.dj_lpl_adt = split(self.dudt)
+                    self.c_e_1, self.c_s_1, self.c_s_sur_1, self.c_s_avg_1, self.phi_e_1, self.phi_s_1, self.j_Li_1, self.T_1, self.lm_phi_1, self.lm_app_1, self.R_film_a_1, self.eps_e_a_1, self.c_ec_s_a_1, self.c_sei_a_1, self.c_lpl_a_1, self.j_sei_a_1, self.j_lpl_a_1 = split(self.u_1)
+                    self.c_e_0, self.c_s_0, self.c_s_sur_0, self.c_s_avg_0, self.phi_e_0, self.phi_s_0, self.j_Li_0, self.T_0, self.lm_phi_0, self.lm_app_0, self.R_film_a_0, self.eps_e_a_0, self.c_ec_s_a_0, self.c_sei_a_0, self.c_lpl_a_0, self.j_sei_a_0, self.j_lpl_a_0 = split(self.u_0)
+                    self.c_e, self.c_s, self.c_s_sur, self.c_s_avg, self.phi_e, self.phi_s, self.j_Li, self.T, self.lm_phi, self.lm_app, self.R_film_a, self.eps_e_a, self.c_ec_s_a, self.c_sei_a, self.c_lpl_a, self.j_sei_a, self.j_lpl_a = split(self.u)
                 else:
                     raise NameError('Not implemented')
             else:
                 if self.solve_lpl_a:
-                    self.dc_edt, self.dc_sdt, self.dc_s_avgdt, self.dc_s_surdt, self.dphi_edt, self.dphi_sdt, self.dj_Lidt, self.dTdt, self.dlm_phidt, self.dlm_appdt, self.dR_film_adt, self.deps_e_adt, self.dj_lpl_adt = split(self.dudt)
-                    self.c_e_1, self.c_s_1, self.c_s_avg_1, self.c_s_sur_1, self.phi_e_1, self.phi_s_1, self.j_Li_1, self.T_1, self.lm_phi_1, self.lm_app_1, self.R_film_a_1, self.eps_e_a_1, self.j_lpl_a_1 = split(self.u_1)
-                    self.c_e_0, self.c_s_0, self.c_s_avg_0, self.c_s_sur_0, self.phi_e_0, self.phi_s_0, self.j_Li_0, self.T_0, self.lm_phi_0, self.lm_app_0, self.R_film_a_0, self.eps_e_a_0, self.j_lpl_a_0 = split(self.u_0)
-                    self.c_e, self.c_s, self.c_s_avg, self.c_s_sur, self.phi_e, self.phi_s, self.j_Li, self.T, self.lm_phi, self.lm_app, self.R_film_a, self.eps_e_a, self.j_lpl_a = split(self.u)
+                    self.dc_edt, self.dc_sdt, self.dc_s_surdt, self.dc_s_avgdt, self.dphi_edt, self.dphi_sdt, self.dj_Lidt, self.dTdt, self.dlm_phidt, self.dlm_appdt, self.dR_film_adt, self.deps_e_adt, self.dj_lpl_adt = split(self.dudt)
+                    self.c_e_1, self.c_s_1, self.c_s_sur_1, self.c_s_avg_1, self.phi_e_1, self.phi_s_1, self.j_Li_1, self.T_1, self.lm_phi_1, self.lm_app_1, self.R_film_a_1, self.eps_e_a_1, self.j_lpl_a_1 = split(self.u_1)
+                    self.c_e_0, self.c_s_0, self.c_s_sur_0, self.c_s_avg_0, self.phi_e_0, self.phi_s_0, self.j_Li_0, self.T_0, self.lm_phi_0, self.lm_app_0, self.R_film_a_0, self.eps_e_a_0, self.j_lpl_a_0 = split(self.u_0)
+                    self.c_e, self.c_s, self.c_s_sur, self.c_s_avg, self.phi_e, self.phi_s, self.j_Li, self.T, self.lm_phi, self.lm_app, self.R_film_a, self.eps_e_a, self.j_lpl_a = split(self.u)
                 else:
-                    self.dc_edt, self.dc_sdt, self.dc_s_avgdt, self.dc_s_surdt, self.dphi_edt, self.dphi_sdt, self.dj_Lidt, self.dTdt, self.dlm_phidt, self.dlm_appdt = split(self.dudt)
-                    self.c_e_1, self.c_s_1, self.c_s_avg_1, self.c_s_sur_1, self.phi_e_1, self.phi_s_1, self.j_Li_1, self.T_1, self.lm_phi_1, self.lm_app_1 = split(self.u_1)
-                    self.c_e_0, self.c_s_0, self.c_s_avg_0, self.c_s_sur_0, self.phi_e_0, self.phi_s_0, self.j_Li_0, self.T_0, self.lm_phi_0, self.lm_app_0 = split(self.u_0)
-                    self.c_e, self.c_s, self.c_s_avg, self.c_s_sur, self.phi_e, self.phi_s, self.j_Li, self.T, self.lm_phi, self.lm_app = split(self.u)
+                    self.dc_edt, self.dc_sdt, self.dc_s_surdt, self.dc_s_avgdt, self.dphi_edt, self.dphi_sdt, self.dj_Lidt, self.dTdt, self.dlm_phidt, self.dlm_appdt = split(self.dudt)
+                    self.c_e_1, self.c_s_1, self.c_s_sur_1, self.c_s_avg_1, self.phi_e_1, self.phi_s_1, self.j_Li_1, self.T_1, self.lm_phi_1, self.lm_app_1 = split(self.u_1)
+                    self.c_e_0, self.c_s_0, self.c_s_sur_0, self.c_s_avg_0, self.phi_e_0, self.phi_s_0, self.j_Li_0, self.T_0, self.lm_phi_0, self.lm_app_0 = split(self.u_0)
+                    self.c_e, self.c_s, self.c_s_sur, self.c_s_avg, self.phi_e, self.phi_s, self.j_Li, self.T, self.lm_phi, self.lm_app = split(self.u)
 
                     self.R_film_a_1 = self.R_film_a_ini
                     self.R_film_c_1 = self.R_film_c_ini
@@ -310,7 +309,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
     def build_pvd(self, state_machine=None):
 
         if self.store_level > 0:
-
             self.c_s_sur_a_pvd = File(self.save_path+'c_s_sur/c_s_sur_a.pvd'); self.c_s_sur_a_fnc = Function(self.V)
             self.c_s_sur_c_pvd = File(self.save_path+'c_s_sur/c_s_sur_c.pvd'); self.c_s_sur_c_fnc = Function(self.V)
 
@@ -420,10 +418,20 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             F_c_s_avg_a = 0
             F_c_s_avg_c = 0
             for i in range(len(self.eps_s_a)):
-                F_c_s_avg_a = F_c_s_avg_a + split(self.dc_s_avg_adt)[i] * split(self.c_s_avg_a)[i] * self.dx \
+                if td:
+                    dc_s_avg_adt = (split(self.c_s_avg_a_1)[i]-split(self.c_s_avg_a_0)[i]) / self.Deltat
+                else:
+                    dc_s_avg_adt = split(self.dc_s_avg_adt)[i]
+
+                F_c_s_avg_a = F_c_s_avg_a + dc_s_avg_adt * split(self.c_s_avg_a)[i] * self.dx \
                             + 3 * (self.j_Li_a_1[i] / (self.F * self.a_s_a[i] * self.R_s_a[i])) * split(self.c_s_avg_a)[i] * self.dx
             for i in range(len(self.eps_s_c)):
-                F_c_s_avg_c = F_c_s_avg_c + split(self.dc_s_avg_cdt)[i] * split(self.c_s_avg_c)[i] * self.dx \
+                if td:
+                    dc_s_avg_cdt = (split(self.c_s_avg_c_1)[i]-split(self.c_s_avg_c_0)[i]) / self.Deltat
+                else:
+                    dc_s_avg_cdt = split(self.dc_s_avg_cdt)[i]
+
+                F_c_s_avg_c = F_c_s_avg_c + dc_s_avg_cdt * split(self.c_s_avg_c)[i] * self.dx \
                             + 3 * (self.j_Li_c_1[i] / (self.F * self.a_s_c[i] * self.R_s_c[i])) * split(self.c_s_avg_c)[i] * self.dx
 
             F_c_s = F_c_s_a + self.F_c_s_sur_a + F_c_s_avg_a \
@@ -610,7 +618,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         
         return F_c_lpl
 
-    
     def build_wf_0(self):
 
         if self.solve_sei_a or self.solve_lpl_a:
@@ -798,8 +805,8 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             for i in range(len(self.eps_s_c)):
                 F_c_s_avg_c_0 = F_c_s_avg_c_0 + (split(self.c_s_avg_c_1)[i] - split(self.c_s_avg_c_0)[i]) * split(self.c_s_avg_c)[i] * self.dx
 
-            self.F_c_s_0 = F_c_s_a_0 + self.F_c_s_sur_a + F_c_s_avg_a_0 \
-                         + F_c_s_c_0 + self.F_c_s_sur_c + F_c_s_avg_c_0
+            F_c_s_0 = F_c_s_a_0 + self.F_c_s_sur_a + F_c_s_avg_a_0 \
+                    + F_c_s_c_0 + self.F_c_s_sur_c + F_c_s_avg_c_0
 
         # phi_e
 
@@ -1062,9 +1069,17 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             if self.microscale_method == 'SGM':
                 j=1
 
-            assign(self.c_s_avg_a_fnc, self.u_0.sub(1+j).sub(0))
-            assign(self.c_s_avg_c_fnc, self.u_0.sub(1+j).sub(1))
+            assign(self.c_s_sur_a_fnc, self.u_0.sub(1+j).sub(0))
+            assign(self.c_s_sur_c_fnc, self.u_0.sub(1+j).sub(1))
+            assign(self.c_s_avg_a_fnc, self.u_0.sub(2+j).sub(0))
+            assign(self.c_s_avg_c_fnc, self.u_0.sub(2+j).sub(1))
+            #self.c_s_sur_a_fnc.vector()[:]=self.c_s_sur_a_fnc.vector()[:]/float(self.c_s_a_max)
+            #self.c_s_sur_c_fnc.vector()[:]=self.c_s_sur_c_fnc.vector()[:]/float(self.c_s_c_max)
+            #self.c_s_avg_a_fnc.vector()[:]=self.c_s_avg_a_fnc.vector()[:]/float(self.c_s_a_max)
+            #self.c_s_avg_c_fnc.vector()[:]=self.c_s_avg_c_fnc.vector()[:]/float(self.c_s_c_max)
             
+            self.c_s_sur_a_pvd << (self.c_s_sur_a_fnc, t)
+            self.c_s_sur_c_pvd << (self.c_s_sur_c_fnc, t)
             self.c_s_avg_a_pvd << (self.c_s_avg_a_fnc, t)
             self.c_s_avg_c_pvd << (self.c_s_avg_c_fnc, t)
 
@@ -1087,9 +1102,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             assign(self.c_e_s_fnc, self.u_0.sub(0).sub(1))
             assign(self.c_e_c_fnc, self.u_0.sub(0).sub(2))
 
-            assign(self.c_s_avg_a_fnc, self.u_0.sub(2+j).sub(0))
-            assign(self.c_s_avg_c_fnc, self.u_0.sub(2+j).sub(1))
-
             assign(self.phi_e_a_fnc, self.u_0.sub(3+j).sub(0))
             assign(self.phi_e_s_fnc, self.u_0.sub(3+j).sub(1))
             assign(self.phi_e_c_fnc, self.u_0.sub(3+j).sub(2))
@@ -1111,9 +1123,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             self.c_e_s_pvd << (self.c_e_s_fnc, t)
             self.c_e_c_pvd << (self.c_e_c_fnc, t)
 
-            self.c_s_avg_a_pvd << (self.c_s_avg_a_fnc, t)
-            self.c_s_avg_c_pvd << (self.c_s_avg_c_fnc, t)
-
             self.phi_e_a_pvd << (self.phi_e_a_fnc, t)
             self.phi_e_s_pvd << (self.phi_e_s_fnc, t)
             self.phi_e_c_pvd << (self.phi_e_c_fnc, t)
@@ -1127,8 +1136,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
             self.eta_a_pvd << (self.eta_a_fnc, t)
             self.eta_c_pvd << (self.eta_c_fnc, t)
-
-
 
             if self.solve_sei_a:
                 assign(self.j_sei_a_fnc, project(self.j_sei_a_1[0], self.V))
@@ -1158,12 +1165,40 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.u_1.vector()[:] = x
 
         return assemble(((self.L_a * self.T_a_1 + self.L_s * self.T_s_1 + self.L_c * self.T_c_1) / (self.L_a+self.L_s+self.L_c))* self.dx)
+    
+    def get_xs_avg_a(self,x):
+        self.u_1.vector()[:] = x
+        return assemble((split(self.c_s_avg_a_1)[0]/self.c_s_a_max)*self.dx)
+    
+    def get_xs_avg_c(self,x):
+        self.u_1.vector()[:] = x
+        return assemble((split(self.c_s_avg_c_1)[0]/self.c_s_c_max)*self.dx)
+    
+    def get_xs_sur_a(self,x):
+        self.u_1.vector()[:] = x
+        return assemble((split(self.c_s_sur_a_1)[0]/self.c_s_a_max)*self.dx)
+    
+    def get_xs_sur_c(self,x):
+        self.u_1.vector()[:] = x
+        return assemble((split(self.c_s_sur_c_1)[0]/self.c_s_c_max)*self.dx)
+
+    def get_ce_avg_a(self,x):
+        self.u_1.vector()[:] = x
+        return assemble(self.c_e_a_1*self.dx)
+
+    def get_ce_avg_s(self,x):
+        self.u_1.vector()[:] = x
+        return assemble(self.c_e_s_1*self.dx)
+    
+    def get_ce_avg_c(self,x):
+        self.u_1.vector()[:] = x
+        return assemble(self.c_e_c_1*self.dx)
 
 class RK_PE_PE_P2D(PE_PE_P2D, fatDAE.dolfin_interface.class_problem.UFL_Problem):
 
     def __init__(self, cell, t_0, t_f, simulation_options, save_path='results/'):
 
-        PE_PE_P2D.__init__(self, cell, simulation_options)
+        PE_PE_P2D.__init__(self, cell, simulation_options, save_path)
 
         self.setup()
 
@@ -1192,7 +1227,7 @@ if __name__ == '__main__':
 
     import os; import shutil; import json; import argparse; import batFEM.class_battery
 
-    parser = argparse.ArgumentParser(description = """batFEM""");
+    parser = argparse.ArgumentParser(description = """batFEM""")
 
     parser.add_argument("battery_json", help = "")
     parser.add_argument("options_json", help = "")
@@ -1212,15 +1247,17 @@ if __name__ == '__main__':
     with open(args.options_json) as json_data:
         json_options = json.load(json_data)
 
-    json_battery = batFEM.class_battery.parse_json(json_battery); cell = batFEM.class_battery.Cell(json_battery, temperature=298.15, SOC=1.0)
+    json_battery = batFEM.class_battery.parse_json(json_battery); cell = batFEM.class_battery.Cell(json_battery, temperature=298.15, SOC=1)
 
     problem = PE_PE_P2D(cell, json_options)
 
     print('Weight [kg]:', cell.weight)
     print('Volume [L]:', cell.volume * 1000)
 
-    status = problem.solve_ie(h=10., v_min=3., i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path)
-    status = problem.solve_ie(h=10., v_min=3., i_app=0.0, t_f= 600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_dcc(h=5., v_min=2.8, i_app=2.0, t_f=1800., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=0)
+    status = problem.solve_ccc(h=10., v_max=3.6, i_app=0.0, t_f=1200., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_ccc(h=5., v_max=3.6, i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_dcc(h=10., v_min=2.8, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
     
     ene = abs(problem.get_ene())
     pow = abs(problem.get_pow())
@@ -1253,5 +1290,20 @@ if __name__ == '__main__':
     plt.plot(problem.t_list,problem.k_list)
     plt.xlabel('Time [s]')
     plt.ylabel('Temperature [K]')
+
+    plt.figure()
+    plt.plot(problem.t_list,problem.xs_avg_a_list,'b-')
+    plt.plot(problem.t_list,problem.xs_sur_a_list,'b--')
+    plt.plot(problem.t_list,problem.xs_avg_c_list,'r-')
+    plt.plot(problem.t_list,problem.xs_sur_c_list,'r--')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Avg. Degree of Lithiation [-]')
+
+    plt.figure()
+    plt.plot(problem.t_list,problem.ce_avg_a_list,'b-')
+    plt.plot(problem.t_list,problem.ce_avg_s_list,'g-')
+    plt.plot(problem.t_list,problem.ce_avg_c_list,'r-')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Avg. Electrolyte concentration [mol/m^3]')
 
     plt.show()

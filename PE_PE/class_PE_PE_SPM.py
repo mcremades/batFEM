@@ -10,6 +10,8 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         assign(self.u_0.sub(0), interpolate(self.c_s_a_ini, self.V))
         assign(self.u_0.sub(1), interpolate(self.c_s_c_ini, self.V))
+        assign(self.u_0.sub(2), interpolate(self.c_s_a_ini, self.P))
+        assign(self.u_0.sub(3), interpolate(self.c_s_c_ini, self.P))
     
     def build_arr(self):
 
@@ -19,9 +21,9 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.D_s_a = self.get_arr_a(self.D_s_a(split(self.c_s_a_1)[0]/self.c_s_a_max), self.D_s_a_Ea, self.D_s_a_Tref)
         self.D_s_c = self.get_arr_c(self.D_s_c(split(self.c_s_c_1)[0]/self.c_s_c_max), self.D_s_c_Ea, self.D_s_c_Tref)
 
-        self.kappa_D_a = 2 * (self.R * self.T_a_1 / self.F) * (1 -  self.t_p_a) * self.kappa_a
-        self.kappa_D_s = 2 * (self.R * self.T_s_1 / self.F) * (1 -  self.t_p_s) * self.kappa_s
-        self.kappa_D_c = 2 * (self.R * self.T_c_1 / self.F) * (1 -  self.t_p_c) * self.kappa_c
+        self.kappa_D_a = 2 * (self.R * self.T_a_1 / self.F) * (1 - self.t_p_a) * self.kappa_a
+        self.kappa_D_s = 2 * (self.R * self.T_s_1 / self.F) * (1 - self.t_p_s) * self.kappa_s
+        self.kappa_D_c = 2 * (self.R * self.T_c_1 / self.F) * (1 - self.t_p_c) * self.kappa_c
 
     def build_fs(self):
 
@@ -30,7 +32,7 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         LM = FiniteElement('R', self.mesh.ufl_cell(), 0);
 
-        ME = MixedElement([P1, P1, LM, LM])
+        ME = MixedElement([P1, P1, LM, LM, LM, LM])
 
         self.V = FunctionSpace(self.mesh, P1)
         self.P = FunctionSpace(self.mesh, LM)
@@ -42,30 +44,48 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.u_1 = Function(self.W)
         self.u_0 = Function(self.W); self.u = TestFunction(self.W)
 
-        self.dc_s_adt, self.dc_s_cdt, self.dvdt, self.didt = split(self.dudt)
+        self.dc_s_adt, self.dc_s_cdt, self.dc_s_sur_adt, self.dc_s_sur_cdt, self.dvdt, self.didt = split(self.dudt)
 
-        self.c_s_a_1, self.c_s_c_1, self.v_1, self.i_1 = split(self.u_1)
-        self.c_s_a_0, self.c_s_c_0, self.v_0, self.i_0 = split(self.u_0)
+        self.c_s_a_1, self.c_s_c_1, self.c_s_sur_a_1, self.c_s_sur_c_1, self.v_1, self.i_1 = split(self.u_1)
+        self.c_s_a_0, self.c_s_c_0, self.c_s_sur_a_0, self.c_s_sur_c_0, self.v_0, self.i_0 = split(self.u_0)
 
-        self.c_a, self.c_c, self.v, self.i = split(self.u)
+        self.c_s_a, self.c_s_c, self.c_s_sur_a, self.c_s_sur_c, self.v, self.i = split(self.u)
 
         self.c_e_a_1 = self.c_e_ini
         self.c_e_s_1 = self.c_e_ini
         self.c_e_c_1 = self.c_e_ini
-        self.c_s_a_sur = [self.c_s_a_1]
-        self.c_s_c_sur = [self.c_s_c_1]
 
         self.T_a_1 = self.T_ini
         self.T_s_1 = self.T_ini
         self.T_c_1 = self.T_ini
 
     def build_pvd(self):
-
         self.c_s_a_pvd = File(self.save_path+'c_s/c_s_a.pvd'); self.c_s_a_fnc = Function(self.V)
         self.c_s_c_pvd = File(self.save_path+'c_s/c_s_c.pvd'); self.c_s_c_fnc = Function(self.V)
+    
+    def get_wf_c_s(self,td=True):
 
-        self.c_s_sur_a_pvd = File(self.save_path+'c_s_sur/c_s_sur_a.pvd'); self.c_s_sur_a_fnc = Function(self.V)
-        self.c_s_sur_c_pvd = File(self.save_path+'c_s_sur/c_s_sur_c.pvd'); self.c_s_sur_c_fnc = Function(self.V)
+        if td:
+            dc_s_adt = (self.c_s_a_1 - self.c_s_a_0) / self.Deltat
+            dc_s_cdt = (self.c_s_c_1 - self.c_s_c_0) / self.Deltat
+        else:
+            dc_s_adt = self.dc_s_adt
+            dc_s_cdt = self.dc_s_cdt
+        
+        r = SpatialCoordinate(self.mesh)
+
+        F_c_s_a = self.R_s_a[0] ** 1 * r**2 * dc_s_adt * self.c_s_a * self.dx \
+                + (1./self.R_s_a[0]) * r**2 * inner(self.D_s_a * grad(self.c_s_a_1), grad(self.c_s_a)) * self.dx \
+                - self.R_s_a[0] ** 0 * (self.i_1 / (self.F * self.a_s_a[0] * self.area * self.L_a)) * self.c_s_a * self.ds(2)
+
+        F_c_s_c = self.R_s_c[0] ** 1 * r**2 * dc_s_cdt * self.c_s_c * self.dx \
+                + (1./self.R_s_c[0]) * r**2 * inner(self.D_s_c * grad(self.c_s_c_1), grad(self.c_s_c)) * self.dx \
+                + self.R_s_c[0] ** 0 * (self.i_1 / (self.F * self.a_s_c[0] * self.area * self.L_c)) * self.c_s_c * self.ds(2)
+
+        F_c_s = F_c_s_a + self.F_c_s_sur_a \
+              + F_c_s_c + self.F_c_s_sur_c
+
+        return F_c_s
 
     def build_wf_0(self):
 
@@ -92,49 +112,48 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.build_brg()
         self.build_arr()
 
-        self.i_0_a = self.F * self.k_0_a * self.c_s_a_1 ** self.alpha * self.c_e_ini ** self.alpha * (self.c_s_a_max - self.c_s_a_1) ** self.alpha
-        self.i_0_c = self.F * self.k_0_c * self.c_s_c_1 ** self.alpha * self.c_e_ini ** self.alpha * (self.c_s_c_max - self.c_s_c_1) ** self.alpha
+        self.i_0_a = self.F * self.k_0_a * self.c_s_sur_a_1 ** self.alpha * self.c_e_a_1 ** self.alpha * (self.c_s_a_max - self.c_s_sur_a_1) ** self.alpha
+        self.i_0_c = self.F * self.k_0_c * self.c_s_sur_c_1 ** self.alpha * self.c_e_c_1 ** self.alpha * (self.c_s_c_max - self.c_s_sur_c_1) ** self.alpha
 
         def arcsinh(x):
             return ln(x + (x**2 + 1) ** 0.5)
 
-        self.F_a_0 = (self.c_s_a_1 - self.c_s_a_0) * self.c_a * self.dx
-        self.F_c_0 = (self.c_s_c_1 - self.c_s_c_0) * self.c_c * self.dx
+        F_c_s_a_0 = (self.c_s_a_1 - self.c_s_a_0) * self.c_s_a * self.dx
+        F_c_s_c_0 = (self.c_s_c_1 - self.c_s_c_0) * self.c_s_c * self.dx
 
-        self.F_v = self.v_1 * self.v * self.ds(2) \
-                 - (self.R * self.T_c_1 / (self.alpha * self.F)) * arcsinh(+ self.i_1 / (2. * self.a_s_c[0] * self.L_c * self.i_0_c)) * self.v * self.ds(2) \
-                 - self.U_c(self.c_s_c_1 / self.c_s_c_max) * self.v * self.ds(2) \
-                 + (self.R * self.T_a_1 / (self.alpha * self.F)) * arcsinh(- self.i_1 / (2. * self.a_s_a[0] * self.L_a * self.i_0_a)) * self.v * self.ds(2) \
-                 + self.U_a(self.c_s_a_1 / self.c_s_a_max) * self.v * self.ds(2) \
+        self.F_c_s_sur_a = self.c_s_sur_a_1*self.c_s_sur_a*self.dx - self.c_s_a_1*self.c_s_sur_a*self.ds(2)
+        self.F_c_s_sur_c = self.c_s_sur_c_1*self.c_s_sur_c*self.dx - self.c_s_c_1*self.c_s_sur_c*self.ds(2)
+
+        F_c_s = F_c_s_a_0 + self.F_c_s_sur_a \
+              + F_c_s_c_0 + self.F_c_s_sur_c
+
+        eta_a = 2 * (self.R * self.T_a_1 / self.F) * arcsinh(- self.i_1 / (2. * self.a_s_a[0] * self.area * self.L_a * self.i_0_a))
+        eta_c = 2 * (self.R * self.T_c_1 / self.F) * arcsinh(+ self.i_1 / (2. * self.a_s_c[0] * self.area * self.L_c * self.i_0_c))
+
+        v_bat = ((self.U_c(self.c_s_sur_c_1 / self.c_s_c_max) + eta_c) * self.v * self.dx) \
+              - ((self.U_a(self.c_s_sur_a_1 / self.c_s_a_max) + eta_a) * self.v * self.dx) \
+              + (self.L_a / (2 * self.area * self.kappa_a)) * self.i_1 * self.v * self.dx \
+              + (self.L_s / (self.area * self.kappa_s)) * self.i_1 * self.v * self.dx \
+              + (self.L_c / (2 * self.area * self.kappa_c)) * self.i_1 * self.v * self.dx
+        
+        self.F_v = self.v_1 * self.v * self.dx - v_bat
 
         self.F_i = (0. + self.beta) * (self.v_1 - self.v_app) * self.i * self.dx \
-                 + (1. - self.beta) * (self.i_1 - self.i_app * self.Q / self.area) * self.i * self.dx
+                 + (1. - self.beta) * (self.i_1 - self.i_app * self.Q) * self.i * self.dx
 
-        self.F_var_0 = self.F_a_0 + self.F_c_0 + self.F_v + self.F_i; self.J_var_0 = derivative(self.F_var_0, self.u_1)
+        self.F_var_0 = F_c_s + self.F_v + self.F_i; self.J_var_0 = derivative(self.F_var_0, self.u_1)
 
     def build_wf_ie(self):
 
-        self.F_a_1 = self.R_s_a[0] ** 1 * Expression('pow(x[0],2)',degree=2) * ((self.c_s_a_1 - self.c_s_a_0) / self.Deltat) * self.c_a * self.dx \
-              + (1./self.R_s_a[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_a * grad(self.c_s_a_1), grad(self.c_a)) * self.dx \
-              - self.R_s_a[0] ** 0 * (self.i_1 / (self.F * self.a_s_a[0] * self.L_a)) * self.c_a * self.ds(2)
+        F_c_s = self.get_wf_c_s(td=True)
 
-        self.F_c_1 = self.R_s_c[0] ** 1 * Expression('pow(x[0],2)',degree=2) * ((self.c_s_c_1 - self.c_s_c_0) / self.Deltat) * self.c_c * self.dx \
-              + (1./self.R_s_c[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_c * grad(self.c_s_c_1), grad(self.c_c)) * self.dx \
-              + self.R_s_c[0] ** 0 * (self.i_1 / (self.F * self.a_s_c[0] * self.L_c)) * self.c_c * self.ds(2)
-
-        self.F_var_1 = self.F_a_1 + self.F_c_1 + self.F_v + self.F_i; self.J_var_1 = derivative(self.F_var_1, self.u_1)
+        self.F_var_1 = F_c_s + self.F_v + self.F_i; self.J_var_1 = derivative(self.F_var_1, self.u_1)
 
     def build_wf_rk(self):
 
-        self.F_a_1 = self.R_s_a[0] ** 1 * Expression('pow(x[0],2)',degree=2) * self.dc_s_adt * self.c_a * self.dx \
-              + (1./self.R_s_a[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_a * grad(self.c_s_a_1), grad(self.c_a)) * self.dx \
-              - self.R_s_a[0] ** 0 * (self.i_1 / (self.F * self.a_s_a[0] * self.L_a)) * self.c_a * self.ds(2)
+        F_c_s = self.get_wf_c_s(td=False)
 
-        self.F_c_1 = self.R_s_c[0] ** 1 * Expression('pow(x[0],2)',degree=2) * self.dc_s_cdt * self.c_c * self.dx \
-              + (1./self.R_s_c[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_c * grad(self.c_s_c_1), grad(self.c_c)) * self.dx \
-              + self.R_s_c[0] ** 0 * (self.i_1 / (self.F * self.a_s_c[0] * self.L_c)) * self.c_c * self.ds(2)
-
-        self.F_var = self.F_a_1 + self.F_c_1 + self.F_v + self.F_i; self.J_var_1 = derivative(self.F_var_1, self.u_1)
+        self.F_var = F_c_s + self.F_v + self.F_i; self.J_var = derivative(self.F_var, self.u_1)
 
     def store(self, t, x, level=0):
 
@@ -146,14 +165,8 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
             assign(self.c_s_a_fnc, self.u_0.sub(0))
             assign(self.c_s_c_fnc, self.u_0.sub(1))
 
-            self.c_s_sur_a_fnc.vector()[:] = assemble(self.c_s_a_fnc * self.ds(1))
-            self.c_s_sur_c_fnc.vector()[:] = assemble(self.c_s_c_fnc * self.ds(1))
-
             self.c_s_a_pvd << (self.c_s_a_fnc, t)
             self.c_s_c_pvd << (self.c_s_c_fnc, t)
-
-            self.c_s_sur_a_pvd << (self.c_s_sur_a_fnc, t)
-            self.c_s_sur_c_pvd << (self.c_s_sur_c_fnc, t)
 
     def get_voltage(self, x):
         self.u_1.vector()[:] = x
@@ -167,6 +180,36 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.u_1.vector()[:] = x
 
         return 298.15
+    
+    def get_xs_avg_a(self,x):
+        self.u_1.vector()[:] = x
+        r = SpatialCoordinate(self.mesh)
+        return assemble(3*(split(self.c_s_a_1)[0]/self.c_s_a_max)*r[0]**2*self.dx)
+    
+    def get_xs_avg_c(self,x):
+        self.u_1.vector()[:] = x
+        r = SpatialCoordinate(self.mesh)
+        return assemble(3*(split(self.c_s_c_1)[0]/self.c_s_c_max)*r[0]**2*self.dx)
+    
+    def get_xs_sur_a(self,x):
+        self.u_1.vector()[:] = x
+        return assemble((split(self.c_s_a_1)[0]/self.c_s_a_max)*self.ds(2))
+    
+    def get_xs_sur_c(self,x):
+        self.u_1.vector()[:] = x
+        return assemble((split(self.c_s_c_1)[0]/self.c_s_c_max)*self.ds(2))
+
+    def get_ce_avg_a(self,x):
+        self.u_1.vector()[:] = x
+        return assemble(self.c_e_a_1*self.dx)
+
+    def get_ce_avg_s(self,x):
+        self.u_1.vector()[:] = x
+        return assemble(self.c_e_s_1*self.dx)
+    
+    def get_ce_avg_c(self,x):
+        self.u_1.vector()[:] = x
+        return assemble(self.c_e_c_1*self.dx)
 
 class RK_PE_PE_SPM(PE_PE_SPM, fatDAE.dolfin_interface.class_problem.UFL_Problem):
 
@@ -209,10 +252,12 @@ class PE_PE_SPME(PE_PE_SPM):
 
         assign(self.u_0.sub(0), interpolate(self.c_s_a_ini, self.V))
         assign(self.u_0.sub(1), interpolate(self.c_s_c_ini, self.V))
+        assign(self.u_0.sub(2), interpolate(self.c_s_a_ini, self.P))
+        assign(self.u_0.sub(3), interpolate(self.c_s_c_ini, self.P))
 
-        assign(self.u_0.sub(4), interpolate(self.c_e_ini, self.V))
-        assign(self.u_0.sub(5), interpolate(self.c_e_ini, self.V))
         assign(self.u_0.sub(6), interpolate(self.c_e_ini, self.V))
+        assign(self.u_0.sub(7), interpolate(self.c_e_ini, self.V))
+        assign(self.u_0.sub(8), interpolate(self.c_e_ini, self.V))
 
     def build_fs(self):
 
@@ -221,7 +266,7 @@ class PE_PE_SPME(PE_PE_SPM):
 
         LM = FiniteElement('R', self.mesh.ufl_cell(), 0);
 
-        ME = MixedElement([P1, P1, LM, LM, P1, P1, P1, LM, LM])
+        ME = MixedElement([P1, P1, LM, LM, LM, LM, P1, P1, P1, LM, LM])
 
         self.V = FunctionSpace(self.mesh, P1)
         self.P = FunctionSpace(self.mesh, LM)
@@ -233,31 +278,55 @@ class PE_PE_SPME(PE_PE_SPM):
         self.u_1 = Function(self.W)
         self.u_0 = Function(self.W); self.u = TestFunction(self.W)
 
-        self.dc_s_adt, self.dc_s_cdt, self.dvdt, self.didt, self.dc_e_adt, self.dc_e_sdt, self.dc_e_cdt, self.dlm_asdt, self.dlm_scdt = split(self.dudt)
+        self.dc_s_adt, self.dc_s_cdt, self.dc_s_sur_adt, self.dc_s_sur_cdt, self.dvdt, self.didt, self.dc_e_adt, self.dc_e_sdt, self.dc_e_cdt, self.dlm_asdt, self.dlm_scdt = split(self.dudt)
 
-        self.c_s_a_1, self.c_s_c_1, self.v_1, self.i_1, self.c_e_a_1, self.c_e_s_1, self.c_e_c_1, self.lm_as_1, self.lm_sc_1 = split(self.u_1)
-        self.c_s_a_0, self.c_s_c_0, self.v_0, self.i_0, self.c_e_a_0, self.c_e_s_0, self.c_e_c_0, self.lm_as_0, self.lm_sc_0 = split(self.u_0)
+        self.c_s_a_1, self.c_s_c_1, self.c_s_sur_a_1, self.c_s_sur_c_1, self.v_1, self.i_1, self.c_e_a_1, self.c_e_s_1, self.c_e_c_1, self.lm_as_1, self.lm_sc_1 = split(self.u_1)
+        self.c_s_a_0, self.c_s_c_0, self.c_s_sur_a_0, self.c_s_sur_c_0, self.v_0, self.i_0, self.c_e_a_0, self.c_e_s_0, self.c_e_c_0, self.lm_as_0, self.lm_sc_0 = split(self.u_0)
 
-        self.c_a, self.c_c, self.v, self.i, self.c_e_a, self.c_e_s, self.c_e_c, self.lm_as, self.lm_sc = split(self.u)
-
-        self.c_s_a_sur = [self.c_s_a_1]
-        self.c_s_c_sur = [self.c_s_c_1]
+        self.c_s_a, self.c_s_c, self.c_s_sur_a, self.c_s_sur_c,self.v, self.i, self.c_e_a, self.c_e_s, self.c_e_c, self.lm_as, self.lm_sc = split(self.u)
 
         self.T_a_1 = self.T_ini
         self.T_s_1 = self.T_ini
         self.T_c_1 = self.T_ini
 
     def build_pvd(self):
-
         self.c_s_a_pvd = File(self.save_path+'c_s/c_s_a.pvd'); self.c_s_a_fnc = Function(self.V)
         self.c_s_c_pvd = File(self.save_path+'c_s/c_s_c.pvd'); self.c_s_c_fnc = Function(self.V)
-
-        self.c_s_sur_a_pvd = File(self.save_path+'c_s_sur/c_s_sur_a.pvd'); self.c_s_sur_a_fnc = Function(self.V)
-        self.c_s_sur_c_pvd = File(self.save_path+'c_s_sur/c_s_sur_c.pvd'); self.c_s_sur_c_fnc = Function(self.V)
 
         self.c_e_a_pvd = File(self.save_path+'c_e/c_e_a.pvd'); self.c_e_a_fnc = Function(self.V)
         self.c_e_s_pvd = File(self.save_path+'c_e/c_e_s.pvd'); self.c_e_s_fnc = Function(self.V)
         self.c_e_c_pvd = File(self.save_path+'c_e/c_e_c.pvd'); self.c_e_c_fnc = Function(self.V)
+    
+    
+        
+    def get_wf_c_e(self,td=True):
+
+        if td:
+            dc_e_adt = (self.c_e_a_1 - self.c_e_a_0) / self.Deltat
+            dc_e_sdt = (self.c_e_s_1 - self.c_e_s_0) / self.Deltat
+            dc_e_cdt = (self.c_e_c_1 - self.c_e_c_0) / self.Deltat
+        else:
+            dc_e_adt = self.dc_e_adt
+            dc_e_sdt = self.dc_e_sdt
+            dc_e_cdt = self.dc_e_cdt
+
+        F_e_a_1 = self.eps_e_a_1 * self.L_a * dc_e_adt * self.c_e_a * self.dx + (1. / self.L_a) * self.D_e_a * inner(grad(self.c_e_a_1), grad(self.c_e_a)) * self.dx \
+                + ((1. - self.t_p_a) / (self.F)) * (self.i_1 / self.area) * self.c_e_a * self.dx \
+                - self.lm_as_1 * self.c_e_a * self.ds(2)
+
+        F_e_s_1 = self.eps_e_s_1 * self.L_s * dc_e_sdt * self.c_e_s * self.dx + (1. / self.L_s) * self.D_e_s * inner(grad(self.c_e_s_1), grad(self.c_e_s)) * self.dx \
+                + self.lm_as_1 * self.c_e_s * self.ds(1) \
+                - self.lm_sc_1 * self.c_e_s * self.ds(2)
+
+        F_e_c_1 = self.eps_e_c_1 * self.L_c * dc_e_cdt * self.c_e_c * self.dx + (1. / self.L_c) * self.D_e_c * inner(grad(self.c_e_c_1), grad(self.c_e_c)) * self.dx \
+                - ((1. - self.t_p_c) / (self.F)) * (self.i_1 / self.area) * self.c_e_c * self.dx \
+                + self.lm_sc_1 * self.c_e_c * self.ds(1)
+
+        F_c_e = F_e_a_1 + self.F_lm_as \
+              + F_e_s_1 \
+              + F_e_c_1 + self.F_lm_sc
+        
+        return F_c_e
 
     def build_wf_0(self):
 
@@ -281,101 +350,80 @@ class PE_PE_SPME(PE_PE_SPM):
         self.tortuosity_e_c = self.eps_e_c_1 ** (1 - self.bruggeman_e_c)
         self.tortuosity_s_c = (1 - self.eps_e_c_1) ** (1 - self.bruggeman_s_c)
 
-
         self.build_brg()
         self.build_arr()
 
-        self.i_0_a = self.F * self.k_0_a * self.c_s_a_1 ** self.alpha * self.c_e_a_1 ** self.alpha * (self.c_s_a_max - self.c_s_a_1) ** self.alpha
-        self.i_0_c = self.F * self.k_0_c * self.c_s_c_1 ** self.alpha * self.c_e_c_1 ** self.alpha * (self.c_s_c_max - self.c_s_c_1) ** self.alpha
+        self.i_0_a = self.F * self.k_0_a * self.c_s_sur_a_1 ** self.alpha * self.c_e_a_1 ** self.alpha * (self.c_s_a_max - self.c_s_sur_a_1) ** self.alpha
+        self.i_0_c = self.F * self.k_0_c * self.c_s_sur_c_1 ** self.alpha * self.c_e_c_1 ** self.alpha * (self.c_s_c_max - self.c_s_sur_c_1) ** self.alpha
 
         def arcsinh(x):
             return ln(x + (x**2 + 1) ** 0.5)
 
-        self.F_a_0 = (self.c_s_a_1 - self.c_s_a_0) * self.c_a * self.dx
-        self.F_c_0 = (self.c_s_c_1 - self.c_s_c_0) * self.c_c * self.dx
+        F_c_s_a_0 = (self.c_s_a_1 - self.c_s_a_0) * self.c_s_a * self.dx
+        F_c_s_c_0 = (self.c_s_c_1 - self.c_s_c_0) * self.c_s_c * self.dx
 
-        self.F_e_a_0 = (self.c_e_a_1 - self.c_e_a_0) * self.c_e_a * self.dx + self.lm_as_1 * self.c_e_a * self.ds(2)
-        self.F_e_s_0 = (self.c_e_s_1 - self.c_e_s_0) * self.c_e_s * self.dx - self.lm_as_1 * self.c_e_s * self.ds(1) + self.lm_sc_1 * self.c_e_s * self.ds(2)
-        self.F_e_c_0 = (self.c_e_c_1 - self.c_e_c_0) * self.c_e_c * self.dx - self.lm_sc_1 * self.c_e_c * self.ds(1)
+        self.F_c_s_sur_a = self.c_s_sur_a_1*self.c_s_sur_a*self.dx - self.c_s_a_1*self.c_s_sur_a*self.ds(2)
+        self.F_c_s_sur_c = self.c_s_sur_c_1*self.c_s_sur_c*self.dx - self.c_s_c_1*self.c_s_sur_c*self.ds(2)
 
-        self.F_v = self.v_1 * self.v * self.ds(2) \
-                 - (self.R * self.T_c_1 / (self.alpha * self.F)) * arcsinh(+ self.i_1 / (2. * self.a_s_c[0] * self.area * self.L_c * self.i_0_c)) * self.v * self.ds(2) \
-                 - self.U_c(self.c_s_c_1 / self.c_s_c_max) * self.v * self.ds(2) - 2 * (self.R*self.T_c_1/self.F) * (1. - self.t_p_c) * ln(self.c_e_c_1) * self.v * self.ds(2) \
-                 + (self.R * self.T_a_1 / (self.alpha * self.F)) * arcsinh(- self.i_1 / (2. * self.a_s_a[0] * self.area * self.L_a * self.i_0_a)) * self.v * self.ds(2) \
-                 + self.U_a(self.c_s_a_1 / self.c_s_a_max) * self.v * self.ds(2) + 2 * (self.R*self.T_a_1/self.F) * (1. - self.t_p_a) * ln(self.c_e_a_1) * self.v * self.ds(1) \
-                 - (self.L_c / (2 * self.area * self.kappa_c)) * self.i_1 * self.v * self.dx \
-                 - (self.L_s / (self.area * self.kappa_s)) * self.i_1 * self.v * self.dx \
-                 - (self.L_a / (2 * self.area * self.kappa_a)) * self.i_1 * self.v * self.dx
+        F_c_s = F_c_s_a_0 + self.F_c_s_sur_a \
+              + F_c_s_c_0 + self.F_c_s_sur_c
 
-        self.F_i = (0. + self.beta) * (self.v_1 - self.v_app) * self.i * self.dx \
-                 + (1. - self.beta) * (self.i_1 - self.i_app * self.Q) * self.i * self.dx
+        F_e_a_0 = (self.c_e_a_1 - self.c_e_a_0) * self.c_e_a * self.dx + self.lm_as_1 * self.c_e_a * self.ds(2)
+        F_e_s_0 = (self.c_e_s_1 - self.c_e_s_0) * self.c_e_s * self.dx - self.lm_as_1 * self.c_e_s * self.ds(1) + self.lm_sc_1 * self.c_e_s * self.ds(2)
+        F_e_c_0 = (self.c_e_c_1 - self.c_e_c_0) * self.c_e_c * self.dx - self.lm_sc_1 * self.c_e_c * self.ds(1)
 
         self.F_lm_as = self.lm_as * self.c_e_a_1 * self.ds(2) - self.lm_as * self.c_e_s_1 * self.ds(1)
         self.F_lm_sc = self.lm_sc * self.c_e_s_1 * self.ds(2) - self.lm_sc * self.c_e_c_1 * self.ds(1)
 
-        self.F_var_0 = self.F_a_0 + self.F_c_0 + self.F_v + self.F_i \
-                     + self.F_e_a_0 \
-                     + self.F_e_s_0 \
-                     + self.F_e_c_0 + self.F_lm_as + self.F_lm_sc
+        F_c_e = F_e_a_0 + self.F_lm_as \
+              + F_e_s_0 \
+              + F_e_c_0 + self.F_lm_sc
+        
+        eta_a = 2 * (self.R * self.T_a_1 / self.F) * arcsinh(- self.i_1 / (2. * self.a_s_a[0] * self.area * self.L_a * self.i_0_a))
+        eta_c = 2 * (self.R * self.T_c_1 / self.F) * arcsinh(+ self.i_1 / (2. * self.a_s_c[0] * self.area * self.L_c * self.i_0_c))
+
+        v_bat = ((self.U_c(self.c_s_sur_c_1 / self.c_s_c_max) + eta_c) * self.v * self.dx + 2 * (self.R*self.T_c_1/self.F) * (1. - self.t_p_c) * ln(self.c_e_c_1) * self.v * self.ds(2)) \
+              - ((self.U_a(self.c_s_sur_a_1 / self.c_s_a_max) + eta_a) * self.v * self.dx + 2 * (self.R*self.T_a_1/self.F) * (1. - self.t_p_a) * ln(self.c_e_a_1) * self.v * self.ds(1)) \
+              + (self.L_a / (2 * self.area * self.kappa_a)) * self.i_1 * self.v * self.dx \
+              + (self.L_s / (self.area * self.kappa_s)) * self.i_1 * self.v * self.dx \
+              + (self.L_c / (2 * self.area * self.kappa_c)) * self.i_1 * self.v * self.dx
+        
+        self.F_v = self.v_1 * self.v * self.dx - v_bat
+
+        self.F_i = (0. + self.beta) * (self.v_1 - self.v_app) * self.i * self.dx \
+                 + (1. - self.beta) * (self.i_1 - self.i_app * self.Q) * self.i * self.dx
+
+        self.F_var_0 = F_c_s + self.F_v + self.F_i \
+                     + F_c_e
 
         self.J_var_0 = derivative(self.F_var_0, self.u_1)
 
     def build_wf_ie(self):
-
         
-        self.F_a_1 = self.R_s_a[0] ** 1 * Expression('pow(x[0],2)',degree=2) * ((self.c_s_a_1 - self.c_s_a_0) / self.Deltat) * self.c_a * self.dx \
-              + (1./self.R_s_a[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_a * grad(self.c_s_a_1), grad(self.c_a)) * self.dx \
-              - self.R_s_a[0] ** 0 * (self.i_1 / (self.F * self.a_s_a[0] * self.L_a)) * self.c_a * self.ds(2)
+        
+        # c_s
+        F_c_s = self.get_wf_c_s(td=True)
 
-        self.F_c_1 = self.R_s_c[0] ** 1 * Expression('pow(x[0],2)',degree=2) * ((self.c_s_c_1 - self.c_s_c_0) / self.Deltat) * self.c_c * self.dx \
-              + (1./self.R_s_c[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_c * grad(self.c_s_c_1), grad(self.c_c)) * self.dx \
-              + self.R_s_c[0] ** 0 * (self.i_1 / (self.F * self.a_s_c[0] * self.L_c)) * self.c_c * self.ds(2)
+        # c_e
+        F_c_e = self.get_wf_c_e(td=True)
 
-        self.F_e_a_1 = self.eps_e_a_1 * self.L_a * ((self.c_e_a_1 - self.c_e_a_0) / self.Deltat) * self.c_e_a * self.dx + (1. / self.L_a) * self.D_e_a * inner(grad(self.c_e_a_1), grad(self.c_e_a)) * self.dx \
-                + ((1. - self.t_p_a) / (self.F)) * (self.i_1 / self.area) * self.c_e_a * self.dx \
-                - self.lm_as_1 * self.c_e_a * self.ds(2)
-
-        self.F_e_s_1 = self.eps_e_s_1 * self.L_s * ((self.c_e_s_1 - self.c_e_s_0) / self.Deltat) * self.c_e_s * self.dx + (1. / self.L_s) * self.D_e_s * inner(grad(self.c_e_s_1), grad(self.c_e_s)) * self.dx \
-                + self.lm_as_1 * self.c_e_s * self.ds(1) \
-                - self.lm_sc_1 * self.c_e_s * self.ds(2)
-
-        self.F_e_c_1 = self.eps_e_c_1 * self.L_c * ((self.c_e_c_1 - self.c_e_c_0) / self.Deltat) * self.c_e_c * self.dx + (1. / self.L_c) * self.D_e_c * inner(grad(self.c_e_c_1), grad(self.c_e_c)) * self.dx \
-                - ((1. - self.t_p_c) / (self.F)) * (self.i_1 / self.area) * self.c_e_c * self.dx \
-                + self.lm_sc_1 * self.c_e_c * self.ds(1)
-
-        self.F_var_1 = self.F_a_1 + self.F_c_1 + self.F_v + self.F_i \
-                     + self.F_e_a_1 \
-                     + self.F_e_s_1 \
-                     + self.F_e_c_1 + self.F_lm_as + self.F_lm_sc
+        self.F_var_1 = F_c_s + self.F_v + self.F_i \
+                     + F_c_e
 
         self.J_var_1 = derivative(self.F_var_1, self.u_1)
 
     def build_wf_rk(self):
 
-        self.F_a_1 = self.R_s_a[0] ** 1 * Expression('pow(x[0],2)',degree=2) * self.dc_s_adt * self.c_a * self.dx \
-              + (1./self.R_s_a[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_a * grad(self.c_s_a_1), grad(self.c_a)) * self.dx \
-              - self.R_s_a[0] ** 0 * (self.i_1 / (self.F * self.a_s_a[0] * self.L_a)) * self.c_a * self.ds(2)
+        # c_s
+        F_c_s = self.get_wf_c_s(td=False)
 
-        self.F_c_1 = self.R_s_c[0] ** 1 * Expression('pow(x[0],2)',degree=2) * self.dc_s_cdt * self.c_c * self.dx \
-              + (1./self.R_s_c[0]) * Expression('pow(x[0],2)',degree=2) * inner(self.D_s_c * grad(self.c_s_c_1), grad(self.c_c)) * self.dx \
-              + self.R_s_c[0] ** 0 * (self.i_1 / (self.F * self.a_s_c[0] * self.L_c)) * self.c_c * self.ds(2)
+        # c_e
+        F_c_e = self.get_wf_c_e(td=False)
 
-        self.F_e_a_1 = self.eps_e_a_1 * self.L_a * self.dc_e_adt * self.c_e_a * self.dx + (1. / self.L_a) * self.D_e_a * inner(grad(self.c_e_a_1), grad(self.c_e_a)) * self.dx \
-                + ((1. - self.t_p_a) / (self.F)) * (self.i_1 / self.area) * self.c_e_a * self.dx \
-                - self.lm_as_1 * self.c_e_a * self.ds(2)
-
-        self.F_e_s_1 = self.eps_e_s_1 * self.L_s * self.dc_e_sdt * self.c_e_s * self.dx + (1. / self.L_s) * self.D_e_s * inner(grad(self.c_e_s_1), grad(self.c_e_s)) * self.dx \
-                + self.lm_as_1 * self.c_e_s * self.ds(1) \
-                - self.lm_sc_1 * self.c_e_s * self.ds(2)
-
-        self.F_e_c_1 = self.eps_e_c_1 * self.L_c * self.dc_e_cdt * self.c_e_c * self.dx + (1. / self.L_c) * self.D_e_c * inner(grad(self.c_e_c_1), grad(self.c_e_c)) * self.dx \
-                - ((1. - self.t_p_c) / (self.F)) * (self.i_1 / self.area) * self.c_e_c * self.dx \
-                + self.lm_sc_1 * self.c_e_c * self.ds(1)
-
-        self.F_var = self.F_a_1 + self.F_c_1 + self.F_v + self.F_i \
-                   + self.F_e_a_1 \
-                   + self.F_e_s_1 \
-                   + self.F_e_c_1 + self.F_lm_as + self.F_lm_sc
+        self.F_var = F_c_s + self.F_v + self.F_i \
+                   + F_c_e
+        
+        self.J_var = derivative(self.F_var, self.u_1)
 
     def store(self, t, x, level=0):
 
@@ -387,18 +435,12 @@ class PE_PE_SPME(PE_PE_SPM):
             assign(self.c_s_a_fnc, self.u_0.sub(0))
             assign(self.c_s_c_fnc, self.u_0.sub(1))
 
-            assign(self.c_e_a_fnc, self.u_0.sub(4))
-            assign(self.c_e_s_fnc, self.u_0.sub(5))
-            assign(self.c_e_c_fnc, self.u_0.sub(6))
-
-            self.c_s_sur_a_fnc.vector()[:] = assemble(self.c_s_a_fnc * self.ds(1))
-            self.c_s_sur_c_fnc.vector()[:] = assemble(self.c_s_c_fnc * self.ds(1))
+            assign(self.c_e_a_fnc, self.u_0.sub(6))
+            assign(self.c_e_s_fnc, self.u_0.sub(7))
+            assign(self.c_e_c_fnc, self.u_0.sub(8))
 
             self.c_s_a_pvd << (self.c_s_a_fnc, t)
             self.c_s_c_pvd << (self.c_s_c_fnc, t)
-
-            self.c_s_sur_a_pvd << (self.c_s_sur_a_fnc, t)
-            self.c_s_sur_c_pvd << (self.c_s_sur_c_fnc, t)
 
             self.c_e_a_pvd << (self.c_e_a_fnc, t)
             self.c_e_s_pvd << (self.c_e_s_fnc, t)
@@ -447,7 +489,7 @@ if __name__ == '__main__':
 
     import os; import shutil; import json; import argparse; import batFEM.class_battery
 
-    parser = argparse.ArgumentParser(description = """batFEM""");
+    parser = argparse.ArgumentParser(description = """batFEM""")
 
     parser.add_argument("battery_json", help = "")
     parser.add_argument("options_json", help = "")
@@ -481,7 +523,10 @@ if __name__ == '__main__':
     print('Weight [kg]:', cell.weight)
     print('Volume [L]:', cell.volume * 1000)
 
-    status = problem.solve_ie(h=10., v_min=3., i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path)
+    status = problem.solve_dcc(h=5., v_min=3.0, i_app=2.0, t_f=1800., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=0)
+    status = problem.solve_ccc(h=10., v_max=3.6, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_ccc(h=5., v_max=3.6, i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_dcc(h=10., v_min=3.0, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
 
     ene = abs(problem.get_ene())
     pow = abs(problem.get_pow())
@@ -507,5 +552,25 @@ if __name__ == '__main__':
     plt.plot(problem.t_list,problem.v_list)
     plt.xlabel('Time [s]')
     plt.ylabel('Voltage [V]')
+    
+    plt.figure()
+    plt.plot(problem.t_list,problem.k_list)
+    plt.xlabel('Time [s]')
+    plt.ylabel('Temperature [K]')
+
+    plt.figure()
+    plt.plot(problem.t_list,problem.xs_avg_a_list,'b-')
+    plt.plot(problem.t_list,problem.xs_sur_a_list,'b--')
+    plt.plot(problem.t_list,problem.xs_avg_c_list,'r-')
+    plt.plot(problem.t_list,problem.xs_sur_c_list,'r--')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Avg. Degree of Lithiation [-]')
+
+    plt.figure()
+    plt.plot(problem.t_list,problem.ce_avg_a_list,'b-')
+    plt.plot(problem.t_list,problem.ce_avg_s_list,'g-')
+    plt.plot(problem.t_list,problem.ce_avg_c_list,'r-')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Avg. Electrolyte concentration [mol/m^3]')
 
     plt.show()

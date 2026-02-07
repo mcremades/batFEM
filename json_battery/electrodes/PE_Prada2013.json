@@ -17,6 +17,9 @@
       "weightFraction": {"unit": "-", "value": "compute"},
       "volumeFraction": {"unit": "-", "value": 0.374},
       "density": {"unit": "kg/m3", "value": 3.2e+03},
+      "electronicConductivity": {"unit": "S/m", "value": 3.37e-01},
+      "thermalConductivity": {"unit": "W/mK", "value": 2.1},
+      "heatCapacity": {"unit": "J/kg K", "value": 700},
       "theoreticalCapacity": {"unit": "Ah/kg", "value": 170},
       "stoichiometry1": {"unit": "-", "value": 0.0038},
       "stoichiometry0": {"unit": "-", "value": 0.7035},
@@ -52,7 +55,10 @@
       "active": 0,
       "weightFraction": {"unit": "-", "value": "compute"},
       "volumeFraction": {"unit": "-", "value": 0.2},
-      "density": {"unit": "kg/m3", "value": 3.2e+03}
+      "density": {"unit": "kg/m3", "value": 3.2e+03},
+      "electronicConductivity": {"unit": "S/m", "value": 3.37e-01},
+      "thermalConductivity": {"unit": "W/mK", "value": 2.1},
+      "heatCapacity": {"unit": "J/kg K", "value": 700}
     }
   ]
 }

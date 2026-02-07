@@ -109,6 +109,7 @@ class Model:
 
                 L_nx = numpy.polynomial.legendre.legmulx(L_n)
                 L_mx = numpy.polynomial.legendre.legmulx(L_m)
+                L_nx2 = numpy.polynomial.legendre.legmulx(L_nx)
 
                 D_nx = numpy.polynomial.legendre.legmulx(D_n)
                 D_mx = numpy.polynomial.legendre.legmulx(D_m)
@@ -123,7 +124,7 @@ class Model:
                     self.K_c_s_a[n, m] = 0.
 
             self.P_c_s_a[n] = numpy.polynomial.legendre.legval(1.0, L_n)
-            self.Q_c_s_a[n] = numpy.polynomial.legendre.legval(1.0, numpy.polynomial.legendre.legint(L_n, lbnd=0))
+            self.Q_c_s_a[n] = 3*numpy.polynomial.legendre.legval(1.0, numpy.polynomial.legendre.legint(L_nx2, lbnd=0))
 
         self.M_c_s_c = numpy.zeros((self.SGM_order_c, self.SGM_order_c))
         self.K_c_s_c = numpy.zeros((self.SGM_order_c, self.SGM_order_c))
@@ -143,6 +144,7 @@ class Model:
 
                 L_nx = numpy.polynomial.legendre.legmulx(L_n)
                 L_mx = numpy.polynomial.legendre.legmulx(L_m)
+                L_nx2 = numpy.polynomial.legendre.legmulx(L_nx)
 
                 D_nx = numpy.polynomial.legendre.legmulx(D_n)
                 D_mx = numpy.polynomial.legendre.legmulx(D_m)
@@ -157,7 +159,7 @@ class Model:
                     self.K_c_s_c[n, m] = 0.
 
             self.P_c_s_c[n] = numpy.polynomial.legendre.legval(1.0, L_n)
-            self.Q_c_s_c[n] = numpy.polynomial.legendre.legval(1.0, numpy.polynomial.legendre.legint(L_n, lbnd=0))
+            self.Q_c_s_c[n] = 3*numpy.polynomial.legendre.legval(1.0, numpy.polynomial.legendre.legint(L_nx2, lbnd=0))
 
     def setup_machine(self, state_machine):
 
@@ -197,6 +199,23 @@ class Model:
         if state_name is not None:
             self.k_dict[state_name][state_number].append(k)
         self.k_list.append(k)
+
+        xs_avg_a=self.get_xs_avg_a(x)
+        xs_avg_c=self.get_xs_avg_c(x)
+        self.xs_avg_a_list.append(xs_avg_a)
+        self.xs_avg_c_list.append(xs_avg_c)
+
+        xs_sur_a=self.get_xs_sur_a(x)
+        xs_sur_c=self.get_xs_sur_c(x)
+        self.xs_sur_a_list.append(xs_sur_a)
+        self.xs_sur_c_list.append(xs_sur_c)
+
+        ce_avg_a=self.get_ce_avg_a(x)
+        ce_avg_s=self.get_ce_avg_s(x)
+        ce_avg_c=self.get_ce_avg_c(x)
+        self.ce_avg_a_list.append(ce_avg_a)
+        self.ce_avg_s_list.append(ce_avg_s)
+        self.ce_avg_c_list.append(ce_avg_c)
 
     def get_ene(self):
         return numpy.trapezoid(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / 3600.
@@ -289,16 +308,69 @@ class Model:
 
         prm = self.solver_1.parameters
 
-        prm["newton_solver"]["absolute_tolerance"] = 1E-2
-        prm["newton_solver"]["relative_tolerance"] = 1E-2
+        prm["newton_solver"]["absolute_tolerance"] = 1E-8
+        prm["newton_solver"]["relative_tolerance"] = 1E-6
 
         try:
             self.solver_1.solve(); self.u_0.assign(self.u_1)
         except:
             print('Error in solving')
             return 0
+    
+    def solve_profile(self, h, i_app, store_level=0, save_path='results/', already_setup=False):
+        
+        self.save_path = save_path
 
-    def solve_ie(self, h=10, v_min=3.0, i_app=30.0, t_f=3600, store_level=0, save_path='results/',already_setup=False):
+        if not already_setup:
+            self.setup()
+            t_0 = 0.
+        else:
+            t_0 = self.t_list[-1]
+            t_f = t_0 + t_f
+
+        self.build_pvd()
+
+        self.i_app.value = 0
+        self.v_app.value = 0
+
+        self.beta.value = 0
+
+        import time; start = time.time()
+
+        t = t_0
+
+        self.store(t, self.u_1.vector()[:], store_level)
+
+        print('Solving...')
+
+        for i in range(len(i_app)):
+
+            if t > t_f:
+                return 2
+
+            self.Deltat.value = h(i); self.i_app.value = i_app(i)
+
+            prm = self.solver_1.parameters
+
+            prm["newton_solver"]["absolute_tolerance"] = 1E-8
+            prm["newton_solver"]["relative_tolerance"] = 1E-6
+
+            try:
+                self.solver_1.solve(); self.u_0.assign(self.u_1)
+            except:
+                print('Error in solving')
+                return 0
+
+            t += h(i)
+
+            self.store(t, self.u_1.vector()[:], store_level)
+
+        print('Elapsed time: ', time.time() - start); print('Steps: ', len(self.t_list))
+
+        return 1
+        
+
+    def solve_dcc(self, h=10, v_min=3.0, i_app=1.0, t_f=3600, store_level=0, save_path='results/', already_setup=False):
 
         self.save_path = save_path
 
@@ -333,8 +405,8 @@ class Model:
 
             prm = self.solver_1.parameters
 
-            prm["newton_solver"]["absolute_tolerance"] = 1E-6
-            prm["newton_solver"]["relative_tolerance"] = 0E-6
+            prm["newton_solver"]["absolute_tolerance"] = 1E-8
+            prm["newton_solver"]["relative_tolerance"] = 1E-6
 
             try:
                 self.solver_1.solve(); self.u_0.assign(self.u_1)
@@ -350,6 +422,57 @@ class Model:
 
         return 1
 
+    def solve_ccc(self, h=10, v_max=4.2, i_app=1.0, t_f=3600, store_level=0, save_path='results/', already_setup=False):
+
+        self.save_path = save_path
+
+        if not already_setup:
+            self.setup()
+            t_0 = 0.
+        else:
+            t_0 = self.t_list[-1]
+            t_f = t_0 + t_f
+
+        self.build_pvd()
+
+        self.i_app.value = 0
+        self.v_app.value = 0
+
+        self.beta.value = 0
+
+        import time; start = time.time()
+
+        t = t_0
+
+        self.store(t, self.u_1.vector()[:], store_level)
+
+        print('Solving...')
+
+        while self.get_voltage(self.u_1.vector()[:]) < v_max:
+
+            if t > t_f:
+                return 2
+
+            self.Deltat.value = h; self.i_app.value = +i_app
+
+            prm = self.solver_1.parameters
+
+            prm["newton_solver"]["absolute_tolerance"] = 1E-8
+            prm["newton_solver"]["relative_tolerance"] = 1E-6
+
+            try:
+                self.solver_1.solve(); self.u_0.assign(self.u_1)
+            except:
+                print('Error in solving')
+                return 0
+
+            t += h
+
+            self.store(t, self.u_1.vector()[:], store_level)
+
+        print('Elapsed time: ', time.time() - start); print('Steps: ', len(self.t_list))
+
+        return 1
 class West(SubDomain):
     def inside(self, x, on_boundary):
         return x[0] < 0.0 + DOLFIN_EPS and on_boundary

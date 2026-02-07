@@ -9,6 +9,10 @@ class Material:
         self.density = data['density']['value']; self.weightFraction = data['weightFraction']['value']
         self.volumeFraction = data['volumeFraction']['value']
 
+        self.electronicConductivity = data['electronicConductivity']['value']
+        self.thermalConducitivty = data['thermalConductivity']['value']
+        self.heatCapacity = data['heatCapacity']['value']
+
 class ActiveMaterial(Material):
 
     def __init__(self, data, SOC_ini):
@@ -201,7 +205,7 @@ class Separator(PorousDomain):
         self.thickness = json_data['thickness']['value']; self.area = json_data['area']['value']
 
         self.thermalConductivity = json_data['thermalConductivity']['value']
-        self.specificHeat = json_data['specificHeat']['value']
+        self.heatCapacity = json_data['heatCapacity']['value']
 
         self.porosity = json_data['porosity']['value']
         self.bruggeman = json_data['bruggeman']['value']
@@ -254,10 +258,6 @@ class PorousElectrode(PorousDomain):
         self.porosity = json_data['porosity']['value']
         self.electrolyteBruggeman = json_data['electrolyteBruggeman']['value']
         self.electrodeBruggeman = json_data['electrodeBruggeman']['value']
-        
-        self.electronicConductivity = json_data['electronicConductivity']['value']
-        self.thermalConductivity = json_data['thermalConductivity']['value']
-        self.specificHeat = json_data['heatCapacity']['value']
 
         self.composition = []
 
@@ -289,6 +289,33 @@ class PorousElectrode(PorousDomain):
         self.set_weight()
 
         self.set_capacity()
+
+        if json_data['electronicConductivity']['value']=='compute':
+            self.electronicConductivity = 0
+            for material in self.composition:
+                self.electronicConductivity += material.volumeFraction * material.electronicConductivity
+            self.electronicConductivity = self.electronicConductivity / (1-self.porosity)
+            self.compute_effective_electronicConductivity = True
+        else:
+            self.electronicConductivity = json_data['electronicConductivity']['value']
+            self.compute_effective_electronicConductivity = False
+
+        if json_data['thermalConductivity']['value']=='compute':
+            self.thermalConductivity = 0
+            for material in self.composition:
+                self.thermalConductivity += material.volumeFraction * material.thermalConductivity
+            self.thermalConductivity = self.thermalConductivity / (1-self.porosity)
+        else:
+            self.thermalConductivity = json_data['thermalConductivity']['value']
+
+        if json_data['heatCapacity']['value']=='compute':
+            self.heatCapacity = 0
+            for material in self.composition:
+                self.heatCapacity += material.volumeFraction * material.heatCapacity
+            self.heatCapacity = self.heatCapacity / (1-self.porosity)
+        else:
+            self.heatCapacity = json_data['heatCapacity']['value']
+
 
     def set_density(self, json_data):
         if json_data['density']['value'] == 'compute':
