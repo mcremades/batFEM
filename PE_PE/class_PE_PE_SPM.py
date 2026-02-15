@@ -59,9 +59,10 @@ class PE_PE_SPM(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.T_s_1 = self.T_ini
         self.T_c_1 = self.T_ini
 
-    def build_pvd(self):
-        self.c_s_a_pvd = File(self.save_path+'c_s/c_s_a.pvd'); self.c_s_a_fnc = Function(self.V)
-        self.c_s_c_pvd = File(self.save_path+'c_s/c_s_c.pvd'); self.c_s_c_fnc = Function(self.V)
+    def build_pvd(self, state_machine=None):
+        if self.store_level > 0:
+            self.c_s_a_pvd = File(self.save_path+'c_s/c_s_a.pvd'); self.c_s_a_fnc = Function(self.V)
+            self.c_s_c_pvd = File(self.save_path+'c_s/c_s_c.pvd'); self.c_s_c_fnc = Function(self.V)
     
     def get_wf_c_s(self,td=True):
 
@@ -261,10 +262,10 @@ class PE_PE_SPME(PE_PE_SPM):
 
     def build_fs(self):
 
-        P1 = FiniteElement('CG', self.mesh.ufl_cell(), 1)
+        P1 = FiniteElement('CG', self.mesh.ufl_cell(), self.FEM_order)
         P0 = FiniteElement('DG', self.mesh.ufl_cell(), 0)
 
-        LM = FiniteElement('R', self.mesh.ufl_cell(), 0);
+        LM = FiniteElement('R', self.mesh.ufl_cell(), 0)
 
         ME = MixedElement([P1, P1, LM, LM, LM, LM, P1, P1, P1, LM, LM])
 
@@ -289,7 +290,7 @@ class PE_PE_SPME(PE_PE_SPM):
         self.T_s_1 = self.T_ini
         self.T_c_1 = self.T_ini
 
-    def build_pvd(self):
+    def build_pvd(self, state_machine=None):
         self.c_s_a_pvd = File(self.save_path+'c_s/c_s_a.pvd'); self.c_s_a_fnc = Function(self.V)
         self.c_s_c_pvd = File(self.save_path+'c_s/c_s_c.pvd'); self.c_s_c_fnc = Function(self.V)
 
@@ -425,9 +426,9 @@ class PE_PE_SPME(PE_PE_SPM):
         
         self.J_var = derivative(self.F_var, self.u_1)
 
-    def store(self, t, x, level=0):
+    def store(self, t, x, level=0, state_name=None, state_number=0):
 
-        batFEM.class_battery_model.Model.store(self, t, x)
+        batFEM.class_battery_model.Model.store(self, t, x, state_name, state_number)
 
         self.u_0.vector()[:] = x
 

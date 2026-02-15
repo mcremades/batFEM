@@ -7,7 +7,7 @@
   "density": {"unit": "kg/m3", "value": 1.65e+03},
   "electrolyteBruggeman": {"unit": "-", "value": 1.5},
   "electrodeBruggeman": {"unit": "-", "value": 1.5},
-  "electronicConductivity": {"unit": "S/m", "value": 1.00e+02},
+  "electronicConductivity": {"unit": "S/m", "value": "compute"},
   "thermalConductivity": {"unit": "W/mK", "value": 1.7},
   "heatCapacity": {"unit": "J/kg K", "value": 700},
   "composition": [

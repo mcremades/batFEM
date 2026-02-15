@@ -163,8 +163,8 @@ class Cell:
                     + self.positiveElectrode.weight \
                     + self.positiveCurrentCollector.weight
 
-        if "capacity" in json['properties']:
-            self.capacity = json['properties']['capacity']['value']
+        if "nominalCapacity" in json['properties']:
+            self.capacity = json['properties']['nominalCapacity']['value']
         else:
             self.capacity = min(self.negativeElectrode.capacity, self.positiveElectrode.capacity)
         
@@ -172,6 +172,8 @@ class Cell:
             self.area = json['properties']['area']['value']
         else:
             self.area = min(self.negativeElectrode.area, self.positiveElectrode.area)
+        
+        print(self.capacity)
 
         print(self.negativeElectrode.capacity)
         print(self.positiveElectrode.capacity)

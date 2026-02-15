@@ -41,14 +41,14 @@ def get_interpolation(xv, type, opts):
 
 class Model:
 
-    def setup(self):
+    def setup(self,i_app=0):
 
         self.build_fs()
 
         self.Deltat = Expression('value', degree=0, value=1.0); self.beta = Expression('value', degree=0, value=0)
 
         self.v_app = Expression('value', degree=0, value=0)
-        self.i_app = Expression('value', degree=0, value=0)
+        self.i_app = Expression('value', degree=0, value=i_app)
 
         self.initial_guess()
 
@@ -59,7 +59,7 @@ class Model:
         self.problem_0 = NonlinearVariationalProblem(self.F_var_0,  self.u_1, [], self.J_var_0); self.solver_0 = NonlinearVariationalSolver(self.problem_0);  prm = self.solver_0.parameters
 
         prm["newton_solver"]["absolute_tolerance"] = 1E-6
-        prm["newton_solver"]["relative_tolerance"] = 0E-6
+        prm["newton_solver"]["relative_tolerance"] = 1E-6
         prm["newton_solver"]["maximum_iterations"] = 200; prm["newton_solver"]["relaxation_parameter"] = 0.9
 
         self.solver_0.solve()
@@ -75,6 +75,7 @@ class Model:
     def build_mesh(self):
 
         self.mesh = UnitIntervalMesh(self.N_x)
+        self.mesh_plot = UnitIntervalMesh(100)
 
         boundaries = MeshFunction("size_t", self.mesh, self.mesh.topology().dim() - 1); boundaries.set_all(0)
 
@@ -274,26 +275,33 @@ class Model:
 
     def write(self, write_level, state_name=None, state_number=0):
 
-        if write_level > 0:
-            dir_path = os.path.join(self.save_path, state_name, str(state_number))
-            os.makedirs(dir_path, exist_ok=True)
+        numpy.savetxt(os.path.join(self.save_path,'time.txt'), self.t_list)
+        numpy.savetxt(os.path.join(self.save_path,'current.txt'), self.i_list)
+        numpy.savetxt(os.path.join(self.save_path,'voltage.txt'), self.v_list)
+        numpy.savetxt(os.path.join(self.save_path,'temperature.txt'), self.k_list)
+
+        numpy.savetxt(os.path.join(self.save_path,'xs_avg_a.txt'), self.xs_avg_a_list)
+        numpy.savetxt(os.path.join(self.save_path,'xs_avg_c.txt'), self.xs_avg_c_list)
+        numpy.savetxt(os.path.join(self.save_path,'xs_sur_a.txt'), self.xs_sur_a_list)
+        numpy.savetxt(os.path.join(self.save_path,'xs_sur_c.txt'), self.xs_sur_c_list)
         
-            numpy.savetxt(os.path.join(self.save_path,'time.txt'), self.t_list)
-            numpy.savetxt(os.path.join(self.save_path,'current.txt'), self.i_list)
-            numpy.savetxt(os.path.join(self.save_path,'voltage.txt'), self.v_list)
-            numpy.savetxt(os.path.join(self.save_path,'temperature.txt'), self.k_list)
+        #if write_level > 0:
+        #    dir_path = os.path.join(self.save_path, state_name, str(state_number))
+        #    os.makedirs(dir_path, exist_ok=True)
+        
+            
 
-            numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
-            numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
 
-            numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
 
-            numpy.savetxt(os.path.join(dir_path,'time.txt'), self.t_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'time.txt'), self.t_dict[state_name][state_number])
 
-            numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
-            numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
 
-            numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
+        #    numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
 
             #self.t_dict[state_name][state_number] = []
 
@@ -317,23 +325,18 @@ class Model:
             print('Error in solving')
             return 0
     
-    def solve_profile(self, h, i_app, store_level=0, save_path='results/', already_setup=False):
+    def solve_profile(self, h, i_app, t_f, store_level=0, write_level=0, save_path='results/', already_setup=False):
         
         self.save_path = save_path
 
         if not already_setup:
-            self.setup()
+            self.setup(i_app[0]/self.Q)
             t_0 = 0.
+
+            self.build_pvd()
         else:
             t_0 = self.t_list[-1]
             t_f = t_0 + t_f
-
-        self.build_pvd()
-
-        self.i_app.value = 0
-        self.v_app.value = 0
-
-        self.beta.value = 0
 
         import time; start = time.time()
 
@@ -343,16 +346,16 @@ class Model:
 
         print('Solving...')
 
-        for i in range(len(i_app)):
+        for i in range(1,len(i_app)):
 
             if t > t_f:
                 return 2
 
-            self.Deltat.value = h(i); self.i_app.value = i_app(i)
-
+            self.Deltat.value = h[i]; self.i_app.value = i_app[i]/self.Q
+            
             prm = self.solver_1.parameters
 
-            prm["newton_solver"]["absolute_tolerance"] = 1E-8
+            prm["newton_solver"]["absolute_tolerance"] = 1E-6
             prm["newton_solver"]["relative_tolerance"] = 1E-6
 
             try:
@@ -361,11 +364,13 @@ class Model:
                 print('Error in solving')
                 return 0
 
-            t += h(i)
+            t += h[i]
 
             self.store(t, self.u_1.vector()[:], store_level)
 
         print('Elapsed time: ', time.time() - start); print('Steps: ', len(self.t_list))
+
+        self.write(write_level, state_name=None, state_number=0)
 
         return 1
         
@@ -377,11 +382,11 @@ class Model:
         if not already_setup:
             self.setup()
             t_0 = 0.
+
+            self.build_pvd()
         else:
             t_0 = self.t_list[-1]
             t_f = t_0 + t_f
-
-        self.build_pvd()
 
         self.i_app.value = 0
         self.v_app.value = 0
@@ -405,7 +410,7 @@ class Model:
 
             prm = self.solver_1.parameters
 
-            prm["newton_solver"]["absolute_tolerance"] = 1E-8
+            prm["newton_solver"]["absolute_tolerance"] = 1E-6
             prm["newton_solver"]["relative_tolerance"] = 1E-6
 
             try:
@@ -429,11 +434,11 @@ class Model:
         if not already_setup:
             self.setup()
             t_0 = 0.
+
+            self.build_pvd()
         else:
             t_0 = self.t_list[-1]
             t_f = t_0 + t_f
-
-        self.build_pvd()
 
         self.i_app.value = 0
         self.v_app.value = 0
@@ -457,7 +462,7 @@ class Model:
 
             prm = self.solver_1.parameters
 
-            prm["newton_solver"]["absolute_tolerance"] = 1E-8
+            prm["newton_solver"]["absolute_tolerance"] = 1E-6
             prm["newton_solver"]["relative_tolerance"] = 1E-6
 
             try:

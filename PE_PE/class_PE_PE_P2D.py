@@ -37,7 +37,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         assign(self.u_0.sub(4+j).sub(0), project(self.U_a(self.c_s_a_ini/self.c_s_a_max), self.V))
         assign(self.u_0.sub(4+j).sub(1), project(self.U_c(self.c_s_c_ini/self.c_s_c_max), self.V))
 
-        if self.lumped_thermal:
+        if self.thermal_model=="adiabatic" or self.thermal_model=="lumped":
             assign(self.u_0.sub(6+j), interpolate(self.T_ini, self.P))
         else:
             assign(self.u_0.sub(6+j).sub(0), interpolate(self.T_ini, self.V))
@@ -53,10 +53,10 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
     def build_fs(self):
 
-        P1 = FiniteElement('CG', self.mesh.ufl_cell(), 1)
+        P1 = FiniteElement('CG', self.mesh.ufl_cell(), self.FEM_order)
         P0 = FiniteElement('DG', self.mesh.ufl_cell(), 0)
 
-        LM = FiniteElement('R', self.mesh.ufl_cell(), 0);
+        LM = FiniteElement('R', self.mesh.ufl_cell(), 0)
 
         E_c_e = [P1, P1, P1, LM, LM]
 
@@ -88,7 +88,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         E_phi_e = [P1, P1, P1, LM, LM]
         E_phi_s = [P1, P1]
 
-        if self.lumped_thermal:
+        if self.thermal_model=="adiabatic" or self.thermal_model=="lumped":
             E_T = LM
         else:
             E_T = [P1, P1, P1, LM, LM]
@@ -189,6 +189,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.V = FunctionSpace(self.mesh, P1)
         self.P = FunctionSpace(self.mesh, LM)
 
+        self.V_plot = FunctionSpace(self.mesh_plot, P1)
         self.W = FunctionSpace(self.mesh, ME)
 
         self.dudt = TrialFunction(self.W)
@@ -282,7 +283,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         self.j_Li_a, self.j_Li_c = split(self.j_Li)
 
-        if self.lumped_thermal:
+        if self.thermal_model=="adiabatic" or self.thermal_model=="lumped":
             self.T_a_1 = self.T_1
             self.T_s_1 = self.T_1
             self.T_c_1 = self.T_1
@@ -302,9 +303,9 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.D_s_a = self.get_arr_a(self.D_s_a(split(self.c_s_sur_a_1)[0]/self.c_s_a_max), self.D_s_a_Ea, self.D_s_a_Tref)
         self.D_s_c = self.get_arr_c(self.D_s_c(split(self.c_s_sur_c_1)[0]/self.c_s_c_max), self.D_s_c_Ea, self.D_s_c_Tref)
 
-        self.kappa_D_a = 2 * (self.R * self.T_a_1 / self.F) * (1 -  self.t_p_a) * self.kappa_a
-        self.kappa_D_s = 2 * (self.R * self.T_s_1 / self.F) * (1 -  self.t_p_s) * self.kappa_s
-        self.kappa_D_c = 2 * (self.R * self.T_c_1 / self.F) * (1 -  self.t_p_c) * self.kappa_c
+        self.kappa_D_a = -2 * (self.R * self.T_a_1 / self.F) * (1 -  self.t_p_a) * self.kappa_a
+        self.kappa_D_s = -2 * (self.R * self.T_s_1 / self.F) * (1 -  self.t_p_s) * self.kappa_s
+        self.kappa_D_c = -2 * (self.R * self.T_c_1 / self.F) * (1 -  self.t_p_c) * self.kappa_c
 
     def build_pvd(self, state_machine=None):
 
@@ -332,7 +333,10 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             self.phi_s_a_pvd = File(self.save_path+'phi_s/phi_s_a.pvd'); self.phi_s_a_fnc = Function(self.V)
             self.phi_s_c_pvd = File(self.save_path+'phi_s/phi_s_c.pvd'); self.phi_s_c_fnc = Function(self.V)
 
-            if self.lumped_thermal:
+            self.j_tot_a_pvd = File(self.save_path+'j_tot/j_tot_a.pvd'); self.j_tot_a_fnc = Function(self.V)
+            self.j_tot_c_pvd = File(self.save_path+'j_tot/j_tot_c.pvd'); self.j_tot_c_fnc = Function(self.V)
+
+            if self.thermal_model=="adiabatic" or self.thermal_model=="lumped":
                 pass
             else:
                 self.T_a_pvd = File(self.save_path+'T/T_a.pvd'); self.T_a_fnc = Function(self.V)
@@ -440,7 +444,14 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
     
     def get_wf_T(self, td=True):
 
-        if self.lumped_thermal:
+        if self.thermal_model == "adiabatic":
+            if td:
+                dTdt = (self.T_1 - self.T_0) / self.Deltat
+            else:
+                dTdt = self.dTdt
+            F_T = dTdt * self.T * self.dx
+            
+        elif self.thermal_model == "lumped":
             L = self.L_a + self.L_s + self.L_c
 
             rho = (self.L_a * self.rho_a + self.L_s * self.rho_s + self.L_c * self.rho_c) / L
@@ -937,7 +948,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         # T_0
 
-        if self.lumped_thermal:
+        if self.thermal_model=="adiabatic" or self.thermal_model=="lumped":
             F_T_0 = (self.T_1 - self.T_0) * self.T * self.dx
         else:
             F_T_a_0 = (self.T_a_1 - self.T_a_0) * self.T_a * self.dx + self.lm_T_as_1 * self.T_a * self.ds(2)
@@ -953,13 +964,16 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         # lm_phi
 
-        self.F_lm_phi = self.phi_e_a_1 * self.lm_phi * self.dx \
-                      + self.phi_e_s_1 * self.lm_phi * self.dx \
-                      + self.phi_e_c_1 * self.lm_phi * self.dx
+        #self.F_lm_phi = self.phi_e_a_1 * self.lm_phi * self.dx \
+        #              + self.phi_e_s_1 * self.lm_phi * self.dx \
+        #              + self.phi_e_c_1 * self.lm_phi * self.dx
 
-        self.F_phi_e = self.F_phi_e + self.phi_e_a * self.lm_phi_1 * self.dx \
-                                    + self.phi_e_s * self.lm_phi_1 * self.dx \
-                                    + self.phi_e_c * self.lm_phi_1 * self.dx \
+        #self.F_phi_e = self.F_phi_e + self.phi_e_a * self.lm_phi_1 * self.dx \
+        #                            + self.phi_e_s * self.lm_phi_1 * self.dx \
+        #                            + self.phi_e_c * self.lm_phi_1 * self.dx \
+        self.F_lm_phi = self.phi_s_a_1 * self.lm_phi * self.ds(1) 
+        
+        self.F_phi_s = self.F_phi_s + self.phi_s_a * self.lm_phi_1 * self.ds(1) \
 
         # lm_app
 
@@ -1068,7 +1082,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             j=0
             if self.microscale_method == 'SGM':
                 j=1
-
+            
             assign(self.c_s_sur_a_fnc, self.u_0.sub(1+j).sub(0))
             assign(self.c_s_sur_c_fnc, self.u_0.sub(1+j).sub(1))
             assign(self.c_s_avg_a_fnc, self.u_0.sub(2+j).sub(0))
@@ -1108,7 +1122,10 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             assign(self.phi_s_a_fnc, self.u_0.sub(4+j).sub(0))
             assign(self.phi_s_c_fnc, self.u_0.sub(4+j).sub(1))
 
-            if self.lumped_thermal:
+            assign(self.j_tot_a_fnc, self.u_0.sub(5+j).sub(0))
+            assign(self.j_tot_c_fnc, self.u_0.sub(5+j).sub(1))
+
+            if self.thermal_model=="adiabatic" or self.thermal_model=="lumped":
                 pass
             else:
                 assign(self.T_a_fnc, self.u_0.sub(6+j).sub(0))
@@ -1129,6 +1146,9 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
             self.phi_s_a_pvd << (self.phi_s_a_fnc, t)
             self.phi_s_c_pvd << (self.phi_s_c_fnc, t)
+
+            self.j_tot_a_pvd << (self.j_tot_a_fnc, t)
+            self.j_tot_c_pvd << (self.j_tot_c_fnc, t)
 
         if level > 2:
             assign(self.eta_a_fnc, project(self.eta_a[0], self.V))
@@ -1254,11 +1274,20 @@ if __name__ == '__main__':
     print('Weight [kg]:', cell.weight)
     print('Volume [L]:', cell.volume * 1000)
 
-    status = problem.solve_dcc(h=5., v_min=2.8, i_app=2.0, t_f=1800., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=0)
-    status = problem.solve_ccc(h=10., v_max=3.6, i_app=0.0, t_f=1200., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
-    status = problem.solve_ccc(h=5., v_max=3.6, i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
-    status = problem.solve_dcc(h=10., v_min=2.8, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_dcc(h=5., v_min=2.8, i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=0)
+    #status = problem.solve_ccc(h=5., v_max=4.1, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_ccc(h=5., v_max=4.1, i_app=1.0, t_f=3600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_dcc(h=5., v_min=2.8, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_dcc(h=1., v_min=2.8, i_app=2.0, t_f=1800., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_ccc(h=1., v_max=4.1, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_ccc(h=1., v_max=4.1, i_app=2.0, t_f=1800., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    #status = problem.solve_dcc(h=1., v_min=2.8, i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_dcc(h=0.5, v_min=json_battery['properties']['minVoltage']['value'], i_app=5.0, t_f=900., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=0)
+    status = problem.solve_ccc(h=1., v_max=json_battery['properties']['maxVoltage']['value'], i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_ccc(h=0.5, v_max=json_battery['properties']['maxVoltage']['value'], i_app=5.0, t_f=900., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
+    status = problem.solve_dcc(h=1., v_min=json_battery['properties']['minVoltage']['value'], i_app=0.0, t_f=600., store_level=json_options['output and storage']['store level'], save_path=save_path,already_setup=1)
     
+
     ene = abs(problem.get_ene())
     pow = abs(problem.get_pow())
 
@@ -1270,11 +1299,12 @@ if __name__ == '__main__':
     print('Energy [Wh/kg]:', ene_weight, 'Power [W/kg]:', pow_weight)
     print('Energy [Wh/m3]:', ene_volume, 'Power [W/m3]:', pow_volume)
 
-    numpy.savetxt(save_path+'time.txt', problem.t_list)
-    numpy.savetxt(save_path+'current.txt', problem.i_list)
-    numpy.savetxt(save_path+'voltage.txt', problem.v_list)
+    problem.write(json_options['output and storage']['write level'])
 
-    numpy.savetxt(save_path+'temperature.txt', problem.k_list)
+    #numpy.savetxt(save_path+'time.txt', problem.t_list)
+    #numpy.savetxt(save_path+'current.txt', problem.i_list)
+    #numpy.savetxt(save_path+'voltage.txt', problem.v_list)
+    #numpy.savetxt(save_path+'temperature.txt', problem.k_list)
 
     plt.figure()
     plt.plot(problem.t_list,problem.i_list)

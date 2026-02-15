@@ -1,12 +1,14 @@
 {
   "general properties": {
-    "max simulation time": 1.0e+06,
+    "max simulation time": 3.6e+04,
     "model": "P2D"
   },
   "space discretization": {
-    "elements": 15,
-    "FEM order": 1,
-    "SGM order": 2
+    "elements": 1,
+    "FEM order": 2,
+    "microscale method":"SGM",
+    "SGM order a": 3,
+    "SGM order c": 3
   },
   "time discretization": {
     "type": "RW",
@@ -14,21 +16,23 @@
     "embedded": 0
   },
   "timestepping properties":{
-    "initial step size": 1.0e+01,
-    "min step size": 1.0e-06,
-    "max step size": 1.0e+04,
-    "abs tolerance": 5.0e-02,
-    "rel tolerance": 5.0e-02
+    "initial step size": 2.0e+01,
+    "min step size": 1.0e-08,
+    "max step size": 1.0e+01,
+    "abs tolerance": 1.0e-03,
+    "rel tolerance": 1.0e-03
   },
   "output and storage": {
     "store level": 0,
+    "write level": 0,
     "print level": 0
   },
   "multiphysics": {
-    "lumped_thermal": 1,
+    "thermal_model": "adiabatic",
     "solve_sei_a": 0,
     "solve_sei_c": 0,
     "solve_lpl_a": 0,
     "solve_lpl_c": 0
   }
 }
+

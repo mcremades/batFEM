@@ -20,7 +20,7 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.SGM_order_a = simulation_options['space discretization']['SGM order a']
         self.SGM_order_c = simulation_options['space discretization']['SGM order c']
 
-        self.lumped_thermal = simulation_options['multiphysics']['lumped_thermal']
+        self.thermal_model = simulation_options['multiphysics']['thermal_model']
 
         self.solve_sei_a = simulation_options['multiphysics']['solve_sei_a']
         self.solve_sei_c = simulation_options['multiphysics']['solve_sei_c']
@@ -335,7 +335,7 @@ class PE_PE(batFEM.class_battery_model.Model):
             self.sigma_a = self.get_brug_s_a(self.sigma_a)
         if self.compute_sigma_c_eff:
             self.sigma_c = self.get_brug_s_c(self.sigma_c)
-    
+        
     def build_fs(self):
         pass
 

@@ -3,7 +3,10 @@
     "heatCapacity": {"unit": "J/(Kg*K)", "value": 1000},
     "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
     "heatConvectionArea": {"unit": "m**2", "value": 0.0172},
-    "area": {"unit": "m^2", "value": 8.58e-03}
+    "area": {"unit": "m^2", "value": 8.58e-03},
+    "nominalCapacity": {"unit":"Ah","value":0.155},
+    "minVoltage": {"unit": "V", "value": 2.5},
+    "maxVoltage": {"unit": "V", "value": 4.1}
   },
   "negativeCurrentCollector": {
     "file": "current_collectors/Cu.json"
