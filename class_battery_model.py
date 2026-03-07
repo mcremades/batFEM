@@ -58,11 +58,20 @@ class Model:
 
         self.problem_0 = NonlinearVariationalProblem(self.F_var_0,  self.u_1, [], self.J_var_0); self.solver_0 = NonlinearVariationalSolver(self.problem_0);  prm = self.solver_0.parameters
 
-        prm["newton_solver"]["absolute_tolerance"] = 1E-6
-        prm["newton_solver"]["relative_tolerance"] = 1E-6
-        prm["newton_solver"]["maximum_iterations"] = 200; prm["newton_solver"]["relaxation_parameter"] = 0.9
+        try:
+            prm["newton_solver"]["absolute_tolerance"] = 1E-12
+            prm["newton_solver"]["relative_tolerance"] = 1E-12
+            prm["newton_solver"]["maximum_iterations"] = 100; prm["newton_solver"]["relaxation_parameter"] = 1.0
 
-        self.solver_0.solve()
+            self.solver_0.solve()
+        except:
+            prm["newton_solver"]["absolute_tolerance"] = 1E-6
+            prm["newton_solver"]["relative_tolerance"] = 1E-6
+            prm["newton_solver"]["maximum_iterations"] = 100; prm["newton_solver"]["relaxation_parameter"] = 0.5
+
+            self.solver_0.solve()
+            
+
 
         self.u_0.assign(self.u_1)
 

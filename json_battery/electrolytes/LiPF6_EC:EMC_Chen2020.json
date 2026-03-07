@@ -10,6 +10,7 @@
                        },
   "transferenceNumber": {"unit": "-", "type":"constant", "value": 0.2594},
   "density": {"unit": "kg/m3", "value": 1.2e+03},
+  "heatCapacity": {"unit": "J/kg K", "value": 2000},
   "initialConcentration": {"unit": "mol/m3", "value": 1.0e+03},
   "solventDiffusionConstant": {"unit": "m**2/s", "value":2.0e-12},
   "solventConcentration": {"unit": "mol/L", "value": 4.541e+00}

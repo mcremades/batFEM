@@ -1077,7 +1077,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         self.u_0.vector()[:] = x
 
-        if level > 0:
+        if level > 1:
 
             j=0
             if self.microscale_method == 'SGM':

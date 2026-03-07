@@ -1,27 +1,48 @@
 {
   "properties": {
-    "heatCapacity": {"unit": "J/(Kg*K)", "value": 1000},
-    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
-    "heatConvectionArea": {"unit": "m**2", "value": 0.18},
+    "name": "ANR26650M1-AS",
+    "format": "26650",
     "area": {"unit": "m^2", "value": 1.80e-01},
-    "nominalCapacity": {"unit":"Ah","value":2.3},
-    "minVoltage": {"unit": "V", "value": 2.8},
-    "maxVoltage": {"unit": "V", "value": 3.6}
+    "volume": {"unit": "m^3", "value": "compute"},
+    "mass": {"unit": "kg", "value": "compute"},
+    "density": {"unit": "kg/m^3", "value": "compute"},
+    "nominalCapacity": {"unit":"Ah","value": 2.3},
+    "minVoltage": {"unit": "V", "value": 2.0},
+    "maxVoltage": {"unit": "V", "value": 3.6},
+    "negative2positiveCapacityRatio": {"unit": "-", "value": "compute"},
+    "preformationLithium": {"unit": "moles", "value": 0.4906},
+    "negativeFormationLithiumLoss": {"unit": "-", "value": 0.05},
+    "positiveFormationLithiumLoss": {"unit": "-", "value": 0.01},
+    "negativeElectrodeLayers": {"unit": "-", "value": 1},
+    "positiveElectrodeLayers": {"unit": "-", "value": 1},
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
+    "heatConvectionArea": {"unit": "m**2", "value": 6.35e-03}
   },
   "negativeCurrentCollector": {
-    "file": "current_collectors/Cu.json"
+    "file": "current_collectors/Cu.json",
+    "thickness": {"unit": "m", "value": 2.0e-05},
+    "area": {"unit": "m^2", "value": 1.80e-01}
   },
   "negativeElectrode": {
-    "file": "electrodes/NE_Prada2013.json"
+    "file": "electrodes/NE_Prada2013.json",
+    "thickness": {"unit": "m", "value": 3.4e-05},
+    "area": {"unit": "m^2", "value": 1.80e-01}
   },
   "separator": {
-    "file": "separators/Separator_Prada2013.json"
+    "file": "separators/Separator_Prada2013.json",
+    "thickness": {"unit": "m", "value": 2.5e-05},
+    "area": {"unit": "m^2", "value": 1.80e-01}
   },
   "positiveElectrode": {
-    "file": "electrodes/PE_Prada2013.json"
+    "file": "electrodes/PE_Prada2013.json",
+    "thickness": {"unit": "m", "value": 8.0e-05},
+    "area": {"unit": "m^2", "value": 1.80e-01}
   },
   "positiveCurrentCollector": {
-    "file": "current_collectors/Al.json"
+    "file": "current_collectors/Al.json",
+    "thickness": {"unit": "m", "value": 2.0e-05},
+    "area": {"unit": "m^2", "value": 1.80e-01}
   },
   "electrolyte": {
     "file": "electrolytes/LiPF6_EC:EMC_Prada2013.json"

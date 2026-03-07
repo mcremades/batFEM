@@ -11,7 +11,7 @@ from dolfin import *
 import fatDAE.class_machine
 
 
-def build_machine(json_1):
+def build_machine(json_1,print_level=0):
 
     machine = fatDAE.class_machine.Machine()
 
@@ -23,19 +23,19 @@ def build_machine(json_1):
         steps_name.append(step['name'])
 
         if step['type'] == 'Pause':
-            steps_dict[step['name']] = ConstantCurrent(0., name=step['name'])
+            steps_dict[step['name']] = ConstantCurrent(0., name=step['name'],print_level=print_level)
 
         elif step['type'] == 'CC':
             if 'value' in step:
-                steps_dict[step['name']] = ConstantCurrent(step['value'],name=step['name'])
+                steps_dict[step['name']] = ConstantCurrent(step['value'],name=step['name'],print_level=print_level)
             else:
-                steps_dict[step['name']] = ConstantCurrent(name=step['name'])
+                steps_dict[step['name']] = ConstantCurrent(name=step['name'],print_level=print_level)
 
         elif step['type'] == 'CV':
             if 'value' in step:
-                steps_dict[step['name']] = ConstantVoltage(step['value'], name=step['name'])
+                steps_dict[step['name']] = ConstantVoltage(step['value'], name=step['name'],print_level=print_level)
             else:
-                steps_dict[step['name']] = ConstantVoltage(name=step['name'])
+                steps_dict[step['name']] = ConstantVoltage(name=step['name'], print_level=print_level)
 
         else:
             raise NameError('Incorrect step type...')
@@ -48,34 +48,34 @@ def build_machine(json_1):
         for event in step['events']:
 
             if event['go to'] == 'End':
-                aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict['End'])
+                aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict['End'],print_level=print_level)
             else:
                 if event['go to'] == 'Next':
-                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[steps_name[i+1]])
+                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[steps_name[i+1]],print_level=print_level)
                 else:
-                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[event['go to']])
+                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[event['go to']],print_level=print_level)
 
             if event['type'] == 'Time':
-                evt = fatDAE.class_machine.Wait(event['value'],event['tol_a'],event['tol_r'])
+                evt = fatDAE.class_machine.Wait(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
 
             elif event['type'] == 'Voltage':
-                evt = Voltage(event['value'],event['tol_a'],event['tol_r'])
+                evt = Voltage(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
 
             elif event['type'] == 'Current':
-                evt = Current(event['value'],event['tol_a'],event['tol_r'])
+                evt = Current(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
 
             elif event['type'] == 'Ah':
-                evt = Ah(event['value'],event['tol_a'],event['tol_r'])
+                evt = Ah(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
             elif event['type'] == 'Wh':
-                evt = Wh(event['value'],event['tol_a'],event['tol_r'])
+                evt = Wh(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
 
             elif event['type'] == 'AhTotal':
-                evt = AhTotal(event['value'],event['tol_a'],event['tol_r'])
+                evt = AhTotal(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
             elif event['type'] == 'WhTotal':
-                evt = WhTotal(event['value'],event['tol_a'],event['tol_r'])
+                evt = WhTotal(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
 
             elif event['type'] == 'MaxCycles':
-                evt = fatDAE.class_machine.MaxCycles(event['value'])
+                evt = fatDAE.class_machine.MaxCycles(event['value'],print_level=print_level)
 
             aux.add_events(evt)
 
@@ -121,9 +121,9 @@ def joint_json(json):
 
 class Ah(fatDAE.class_machine.Event):
 
-    def __init__(self, Ah, tol_a=1e-2, tol_r=1e-2):
+    def __init__(self, Ah, tol_a=1e-2, tol_r=1e-2,print_level=0):
 
-        fatDAE.class_machine.Event.__init__(self)
+        fatDAE.class_machine.Event.__init__(self,print_level=print_level)
 
         self.Ah = Ah
 
@@ -148,14 +148,15 @@ class Ah(fatDAE.class_machine.Event):
         f_k = self.f(Ah_k)
 
         if abs(f_k) / (self.tol_a + self.tol_r * abs(f_k)) < 1.0:
-
-            print('Event located'); return x_k, h_k, True, True
+            if self.print_level > -1:
+                print('Event located')
+            return x_k, h_k, True, True
 
         else:
 
             if f_0 * f_k < 0.0:
-
-                print('Locating event...')
+                if self.print_level > -1:
+                    print('Locating event...')
 
                 def g(t):
                     return self.f((1.0 - t) * Ah_0 + t * Ah_k)
@@ -174,9 +175,9 @@ class Ah(fatDAE.class_machine.Event):
 
 class AhTotal(Ah):
 
-    def __init__(self, Ah, tol_a=1e-2, tol_r=1e-2):
+    def __init__(self, Ah, tol_a=1e-2, tol_r=1e-2, print_level=0):
 
-        fatDAE.class_machine.Event.__init__(self)
+        fatDAE.class_machine.Event.__init__(self, print_level=print_level)
 
         self.Ah = Ah
 
@@ -202,13 +203,16 @@ class AhTotal(Ah):
 
         if abs(f_k) / (self.tol_a + self.tol_r * abs(f_k)) < 1.0:
 
-            print('Event located'); return x_k, h_k, True, True
+            if self.print_level > -1:
+                print('Event located'); 
+            return x_k, h_k, True, True
 
         else:
 
             if f_0 * f_k < 0.0:
 
-                print('Locating event...')
+                if self.print_level > -1:
+                    print('Locating event...')
 
                 def g(t):
                     return self.f((1.0 - t) * Ah_0 + t * Ah_k)
@@ -227,9 +231,9 @@ class AhTotal(Ah):
 
 class Wh(fatDAE.class_machine.Event):
 
-    def __init__(self, Wh, tol_a=1e-2, tol_r=1e-2):
+    def __init__(self, Wh, tol_a=1e-2, tol_r=1e-2, print_level=0):
 
-        fatDAE.class_machine.Event.__init__(self)
+        fatDAE.class_machine.Event.__init__(self, print_level=print_level)
 
         self.Wh = Wh
 
@@ -256,13 +260,16 @@ class Wh(fatDAE.class_machine.Event):
 
         if abs(f_k) / (self.tol_a + self.tol_r * abs(f_k)) < 1.0:
 
-            print('Event located'); return x_k, h_k, True, True
+            if self.print_level > -1:
+                print('Event located')
+            return x_k, h_k, True, True
 
         else:
 
             if f_0 * f_k < 0.0:
 
-                print('Locating event...')
+                if self.print_level > -1:
+                    print('Locating event...')
 
                 def g(t):
                     return self.f((1.0 - t) * Wh_0 + t * Wh_k)
@@ -281,9 +288,9 @@ class Wh(fatDAE.class_machine.Event):
 
 class WhTotal(Wh):
 
-    def __init__(self, Wh, tol_a=1e-2, tol_r=1e-2):
+    def __init__(self, Wh, tol_a=1e-2, tol_r=1e-2, print_level=0):
 
-        fatDAE.class_machine.Event.__init__(self)
+        fatDAE.class_machine.Event.__init__(self, print_level=print_level)
 
         self.Wh = Wh
 
@@ -309,14 +316,16 @@ class WhTotal(Wh):
         f_k = self.f(Wh_k)
 
         if abs(f_k) / (self.tol_a + self.tol_r * abs(f_k)) < 1.0:
-
-            print('Event located'); return x_k, h_k, True, True
+            if self.print_level > -1:
+                print('Event located')
+            return x_k, h_k, True, True 
 
         else:
 
             if f_0 * f_k < 0.0:
 
-                print('Locating event...')
+                if self.print_level > -1:
+                    print('Locating event...')
 
                 def g(t):
                     return self.f((1.0 - t) * Wh_0 + t * Wh_k)
@@ -340,9 +349,9 @@ class Voltage(fatDAE.class_machine.Event):
         v (:obj:`float`): Voltage.
     '''
 
-    def __init__(self, v, tol_a = 1e-2, tol_r = 1e-2):
+    def __init__(self, v, tol_a = 1e-2, tol_r = 1e-2, print_level=0):
 
-        fatDAE.class_machine.Event.__init__(self)
+        fatDAE.class_machine.Event.__init__(self, print_level=print_level)
 
         self.v = v
 
@@ -365,14 +374,16 @@ class Voltage(fatDAE.class_machine.Event):
         f_k = self.f(v_k)
 
         if abs(f_k) / (self.tol_a + self.tol_r * abs(f_k)) < 1.0:
-
-            print('Event located'); return x_k, h_k, True, True
+            if self.print_level > -1:
+                print('Event located')
+            return x_k, h_k, True, True     
 
         else:
 
             if f_0 * f_k < 0.0:
 
-                print('Locating event...')
+                if self.print_level > -1:
+                    print('Locating event...')
 
                 def g(t):
                     return self.f((1.0 - t) * v_0 + t * v_k)
@@ -396,9 +407,9 @@ class Current(fatDAE.class_machine.Event):
         i (:obj:`float`): Current.
     '''
 
-    def __init__(self, i, tol_a = 1e-2, tol_r = 1e-2):
+    def __init__(self, i, tol_a = 1e-2, tol_r = 1e-2, print_level=0):
 
-        fatDAE.class_machine.Event.__init__(self)
+        fatDAE.class_machine.Event.__init__(self, print_level=print_level)
 
         self.i = i
         self.i_r = i
@@ -423,13 +434,16 @@ class Current(fatDAE.class_machine.Event):
 
         if abs(f_k) / (self.tol_a + self.tol_r * abs(f_k)) < 1.0:
 
-            print('Event located'); return x_k, h_k, True, True
+            if self.print_level > -1:
+                print('Event located')
+            return x_k, h_k, True, True
 
         else:
 
             if f_0 * f_k < 0.0:
 
-                print('Locating event...')
+                if self.print_level > -1:
+                    print('Locating event...')
 
                 def g(t):
                     return self.f((1.0 - t) * i_0 + t * i_k)
@@ -508,10 +522,11 @@ class BatteryState(fatDAE.class_machine.State):
 
         fatDAE.class_machine.State.exec_out(self, params)
 
-        print('Ah_total:', self.params['Ah_total'])
-        print('Wh_total:', self.params['Wh_total'])
-        print('Ah:', self.params['Ah'])
-        print('Wh:', self.params['Wh']); print('Time', self.t)
+        if self.print_level > -1:
+            print('Ah_total:', self.params['Ah_total'])
+            print('Wh_total:', self.params['Wh_total'])
+            print('Ah:', self.params['Ah'])
+            print('Wh:', self.params['Wh']); print('Time', self.t)
 
         if reset:
             self.params['Ah_total'] = 0.
@@ -533,7 +548,7 @@ class ConstantCurrent(BatteryState):
     ''' Constant current operation mode.
     '''
 
-    def __init__(self, i=None, name='CC'):
+    def __init__(self, i=None, name='CC',print_level=0):
 
         fatDAE.class_machine.State.__init__(self, name)
 
@@ -544,6 +559,8 @@ class ConstantCurrent(BatteryState):
         self.params['Ah_total']=0.
         self.params['Wh']=0.
         self.params['Wh_total']=0.
+
+        self.print_level = print_level
 
         self.data={'V': [], 'A': [], 'W': [], 'T': [], \
                    'Ah': [], \
@@ -559,7 +576,8 @@ class ConstantCurrent(BatteryState):
 
         fatDAE.class_machine.State.exec_ini(self, params)
 
-        print('Control changed.')
+        if self.print_level > -1:
+            print('Control changed.')
 
         self.t = params['t_0'] + params['h_k']
 
@@ -583,7 +601,7 @@ class ConstantVoltage(BatteryState):
     ''' Constant voltage operation mode.
     '''
 
-    def __init__(self, v=None, name='CV'):
+    def __init__(self, v=None, name='CV',print_level=0):
 
         fatDAE.class_machine.State.__init__(self, name)
 
@@ -594,6 +612,8 @@ class ConstantVoltage(BatteryState):
         self.params['Ah_total']=0.
         self.params['Wh']=0.
         self.params['Wh_total']=0.
+
+        self.print_level = print_level
 
         self.data={'V': [], 'A': [], 'W': [], 'T': [], \
                    'Ah': [], \
@@ -609,7 +629,8 @@ class ConstantVoltage(BatteryState):
 
         fatDAE.class_machine.State.exec_ini(self, params)
 
-        print('Control changed.')
+        if self.print_level > -1:
+            print('Control changed.')
 
         self.t = params['t_0'] + params['h_k']
 
