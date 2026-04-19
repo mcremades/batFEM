@@ -1,7 +1,5 @@
 {
   "name": "Marquis2019",
-  "thickness": {"unit": "m", "value": 2.5e-5},
-  "area": {"unit": "m^2", "value": 2.83e-2},
   "density": {"unit": "kg/m3", "value": 3.97e+02},
   "porosity": {"unit": "-", "value": 1.0},
   "bruggeman": {"unit": "-", "value": 1.5},

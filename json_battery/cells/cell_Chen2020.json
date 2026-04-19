@@ -1,25 +1,48 @@
 {
   "properties": {
-    "heatCapacity": {"unit": "J/(Kg*K)", "value": 1000},
+    "name": "SLPB 75106100",
+    "format": "Pouch",
+    "area": {"unit": "m^2", "value": "compute"},
+    "volume": {"unit": "m^3", "value": "compute"},
+    "mass": {"unit": "kg", "value": "compute"},
+    "density": {"unit": "kg/m^3", "value": "compute"},
+    "nominalCapacity": {"unit": "Ah", "value": 5.0},
+    "minVoltage": {"unit": "V", "value": 2.5},
+    "maxVoltage": {"unit": "V", "value": 4.2},
+    "negative2positiveCapacityRatio": {"unit": "-", "value": "compute"},
+    "preformationLithium": {"unit": "moles", "value": "compute"},
+    "negativeFormationLithiumLoss": {"unit": "-", "value": "compute"},
+    "positiveFormationLithiumLoss": {"unit": "-", "value": "compute"},
+    "negativeElectrodeLayers": {"unit": "-", "value": 1},
+    "positiveElectrodeLayers": {"unit": "-", "value": 1},
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
     "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
-    "heatConvectionArea": {"unit": "m**2", "value": 0.00531},
-    "capacity": {"unit": "Ah", "value": 5},
-    "area": {"unit": "m^2", "value": 0.1027}
+    "heatConvectionArea": {"unit": "m**2", "value": 5.31e-03}
   },
   "negativeCurrentCollector": {
-    "file": "current_collectors/Cu.json"
+    "file": "current_collectors/Cu.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 1.027e-01}
   },
   "negativeElectrode": {
-    "file": "electrodes/NE_Chen2020.json"
+    "file": "electrodes/NE_Chen2020.json",
+    "thickness": {"unit": "m", "value": 8.52e-05},
+    "area": {"unit": "m^2", "value": 1.027e-01}
   },
   "separator": {
-    "file": "separators/Separator_Chen2020.json"
+    "file": "separators/Separator_Chen2020.json",
+    "thickness": {"unit": "m", "value": 1.2e-5},
+    "area": {"unit": "m^2", "value":  1.027e-01}
   },
   "positiveElectrode": {
-    "file": "electrodes/PE_Chen2020.json"
+    "file": "electrodes/PE_Chen2020.json",
+    "thickness": {"unit": "m", "value": 7.56e-05},
+    "area": {"unit": "m^2", "value": 1.027e-01}
   },
   "positiveCurrentCollector": {
-    "file": "current_collectors/Al.json"
+    "file": "current_collectors/Al.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 1.027e-01}
   },
   "electrolyte": {
     "file": "electrolytes/LiPF6_EC:EMC_Chen2020.json"

@@ -6,7 +6,7 @@
     "volume": {"unit": "m^3", "value": "compute"},
     "mass": {"unit": "kg", "value": "compute"},
     "density": {"unit": "kg/m^3", "value": "compute"},
-    "nominalCapacity": {"unit": "Ah", "value": 7.5},
+    "nominalCapacity": {"unit":"Ah","value":7.5},
     "minVoltage": {"unit": "V", "value": 2.5},
     "maxVoltage": {"unit": "V", "value": 4.2},
     "negative2positiveCapacityRatio": {"unit": "-", "value": "compute"},
@@ -16,7 +16,7 @@
     "negativeElectrodeLayers": {"unit": "-", "value": 24},
     "positiveElectrodeLayers": {"unit": "-", "value": 25},
     "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
-    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value":  5},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 5},
     "heatConvectionArea": {"unit": "m**2", "value": 1.72e-02}
   },
   "negativeCurrentCollector": {
@@ -26,18 +26,39 @@
   },
   "negativeElectrode": {
     "file": "electrodes/NE_Ecker2015.json",
-    "thickness": {"unit": "m", "value": 7.3e-05},
-    "area": {"unit": "m^2", "value": 8.96e-03}
+    "thickness": {"unit": "m", "value": 7.3e-05,"opt":1,"lb":5.0e-5,"ub":1.25e-04},
+    "porosity": {"unit": "-", "value": "compute"},
+    "area": {"unit": "m^2", "value": 8.96e-03},
+    "composition": [
+      {
+        "volumeFraction": {"unit": "-", "value": 0.372,"opt":1,"lb":0.2,"ub":0.5},
+        "particleRadius": {"unit": "m", "value": 1.37e-05,"opt":1,"lb":1.0e-06,"ub":2.5e-05}
+      },
+      {
+        "volumeFraction": {"unit": "-", "value": 0.299,"opt":1,"lb":0.1,"ub":0.3}
+      }
+    ]
   },
   "separator": {
     "file": "separators/Separator_Ecker2015.json",
-    "thickness": {"unit": "m", "value": 2.4e-05},
+    "thickness": {"unit": "m", "value": 2.4e-05,"opt":0,"lb":1.5e-5,"ub":5.0e-05},
+    "porosity": {"unit": "-", "value": 0.508,"opt":0,"lb":0.2,"ub":0.8},
     "area": {"unit": "m^2", "value": 8.96e-03}
   },
   "positiveElectrode": {
     "file": "electrodes/PE_Ecker2015.json",
-    "thickness": {"unit": "m", "value": 5.4e-05},
-  "area": {"unit": "m^2", "value": 8.58e-03}
+    "thickness": {"unit": "m", "value": 5.4e-05,"opt":1,"lb":2.5e-5,"ub":1.25e-04},
+    "porosity": {"unit": "-", "value": "compute"},
+    "area": {"unit": "m^2", "value": 8.58e-03},
+    "composition": [
+      {
+        "volumeFraction": {"unit": "-", "value": 0.408,"opt":1,"lb":0.2,"ub":0.5},
+        "particleRadius": {"unit": "m", "value": 6.5e-06,"opt":1,"lb":1.0e-06,"ub":1.0e-05}
+      },
+      {
+        "volumeFraction": {"unit": "-", "value": 0.296,"opt":1,"lb":0.1,"ub":0.3}
+      }
+    ]
   },
   "positiveCurrentCollector": {
     "file": "current_collectors/Al.json",

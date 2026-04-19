@@ -34,7 +34,7 @@
       "initialConcentration": {"unit": "mol/m**3", "value": 26120.05},
       "diffusionConstant": {"unit": "m**2/s", 
                             "type":"function", 
-                            "value": "8.4e-13*exp(-11.3*x)+8.2e-15",
+                            "value": "8.4e-13*exp(-11.3*x)+8.2e-14",
                             "arrhenius":{
                               "activationEnergy": {"unit":"J/mol", "value":30300},
                               "referenceTemperature": {"unit":"K", "value":296.00}
@@ -48,7 +48,8 @@
       "lplOCP": {"unit": "V", "value": 0.0},
       "seiKineticConstant": {"unit": "m/s", "value": 1.0e-12},
       "lplExchangeCurrent": {"unit": "A/m**2", "value": 1.0e-3},
-      "seiVolumeFraction": {"unit": "-", "value": 0.05},
+      "seiElectronicConductivity": {"unit": "S/m", "value": 1.0e-4},
+      "lplElectronicConductivity": {"unit": "S/m", "value": 1.1e+7},
       "seiIonicConductivity": {"unit": "S/m", "value": 1.0e-2},
       "seiMass": {"unit":"kg/mol", "value":1.62e-1},
       "seiDensity": {"unit":"kg/m**3", "value":1.69e3},

@@ -71,7 +71,7 @@ def build(battery_json, testplan_json, options_json, save_path):
     battery_json = batFEM.class_battery.parse_json(battery_json, path='json_battery/')
 
     battery = batFEM.class_battery.Cell(battery_json, testplan_json['initial values']['exterior temperature'], testplan_json['initial values']['SOC']); testplan = batFEM.class_machine.build_machine(testplan_json)
-
+ 
     if battery_json['negativeElectrode']['type'] == 'PE' and battery_json['positiveElectrode']['type'] == 'PE':
         if options_json['general properties']['model'] == 'P2D':
             problem = class_PE_PE_P2D.RK_PE_PE_P2D(battery, 0., options_json['general properties']['max simulation time'], options_json, save_path=save_path)
@@ -96,9 +96,9 @@ def build(battery_json, testplan_json, options_json, save_path):
     problem.build_pvd(testplan); problem.setup_machine(testplan)
 
     if options_json['time discretization']['mode'] == 'adaptive':
-        problem.solve(solver, state_machine=testplan, h=options_json['timestepping properties']['initial step size'], adp=True)
+        problem.solve(solver, state_machine=testplan, h=options_json['timestepping properties']['initial step size'], adp=True, print_level=1)
     else:
-        problem.solve(solver, state_machine=testplan, h=options_json['timestepping properties']['initial step size'], adp=False)
+        problem.solve(solver, state_machine=testplan, h=options_json['timestepping properties']['initial step size'], adp=False, print_level=1)
 
     # Post-process and plot
 
@@ -153,5 +153,15 @@ matplotlib.pyplot.figure()
 matplotlib.pyplot.plot(problem.t_list,problem.k_list)
 matplotlib.pyplot.xlabel('Time [s]')
 matplotlib.pyplot.ylabel('Temperature [K]')
+
+matplotlib.pyplot.figure()
+matplotlib.pyplot.plot(problem.t_list,problem.delta_film_a_list)
+matplotlib.pyplot.xlabel('Time [s]')
+matplotlib.pyplot.ylabel('Film thickness [m]')
+
+matplotlib.pyplot.figure()
+matplotlib.pyplot.plot(problem.t_list,problem.eps_e_a_list)
+matplotlib.pyplot.xlabel('Time [s]')
+matplotlib.pyplot.ylabel('Neg. electrode porosity [-]')
 
 matplotlib.pyplot.show()

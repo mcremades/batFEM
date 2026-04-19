@@ -1,6 +1,6 @@
 {
   "general properties": {
-    "max simulation time": 3.6e+06,
+    "max simulation time": 7.2e+06,
     "model": "P2D"
   },
   "space discretization": {
@@ -18,7 +18,7 @@
   "timestepping properties":{
     "initial step size": 1.0e+00,
     "min step size": 1.0e-08,
-    "max step size": 6.0e+01,
+    "max step size": 3.0e+01,
     "abs tolerance": 1.0e-06,
     "rel tolerance": 1.0e-03
   },
@@ -29,7 +29,7 @@
   },
   "multiphysics": {
     "thermal_model": "lumped",
-    "solve_sei_a": 0,
+    "solve_sei_a": 1,
     "solve_sei_c": 0,
     "solve_lpl_a": 0,
     "solve_lpl_c": 0

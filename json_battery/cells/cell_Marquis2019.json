@@ -1,27 +1,48 @@
 {
   "properties": {
-    "heatCapacity": {"unit": "J/(Kg*K)", "value": 1000},
-    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 10},
-    "heatConvectionArea": {"unit": "m**2", "value": 0.569},
-    "area": {"unit": "m^2", "value": 2.83e-02},
-    "nominalCapacity": {"unit":"Ah","value":0.6806},
+    "name": "",
+    "format": "Pouch",
+    "area": {"unit": "m^2", "value": "compute"},
+    "volume": {"unit": "m^3", "value": "compute"},
+    "mass": {"unit": "kg", "value": "compute"},
+    "density": {"unit": "kg/m^3", "value": "compute"},
+    "nominalCapacity": {"unit": "Ah", "value": 0.6806},
     "minVoltage": {"unit": "V", "value": 2.8},
-    "maxVoltage": {"unit": "V", "value": 4.2}
+    "maxVoltage": {"unit": "V", "value": 4.2},
+    "negative2positiveCapacityRatio": {"unit": "-", "value": "compute"},
+    "preformationLithium": {"unit": "moles", "value": "compute"},
+    "negativeFormationLithiumLoss": {"unit": "-", "value": "compute"},
+    "positiveFormationLithiumLoss": {"unit": "-", "value": "compute"},
+    "negativeElectrodeLayers": {"unit": "-", "value": 1},
+    "positiveElectrodeLayers": {"unit": "-", "value": 1},
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value":  5.0},
+    "heatConvectionArea": {"unit": "m**2", "value": 5.66e-02}
   },
   "negativeCurrentCollector": {
-    "file": "current_collectors/Cu.json"
+    "file": "current_collectors/Cu.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 2.83e-02}
   },
   "negativeElectrode": {
-    "file": "electrodes/NE_Marquis2019.json"
+    "file": "electrodes/NE_Marquis2019.json",
+    "thickness": {"unit": "m", "value": 1.0e-04},
+    "area": {"unit": "m^2", "value": 2.83e-02}
   },
   "separator": {
-    "file": "separators/Separator_Marquis2019.json"
+    "file": "separators/Separator_Marquis2019.json",
+    "thickness": {"unit": "m", "value": 2.5e-5},
+    "area": {"unit": "m^2", "value": 2.83e-2}
   },
   "positiveElectrode": {
-    "file": "electrodes/PE_Marquis2019.json"
+    "file": "electrodes/PE_Marquis2019.json",
+    "thickness": {"unit": "m", "value": 1.0e-04},
+    "area": {"unit": "m^2", "value": 2.83e-02}
   },
   "positiveCurrentCollector": {
-    "file": "current_collectors/Al.json"
+    "file": "current_collectors/Al.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 8.96e-03}
   },
   "electrolyte": {
     "file": "electrolytes/LiPF6_EC:DMC_Marquis2019.json"

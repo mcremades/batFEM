@@ -1,10 +1,9 @@
 {
   "type": "PE",
   "name": "Negative electrode",
-  "thickness": {"unit": "m", "value": 8.52e-05},
-  "area": {"unit": "m^2", "value": 1.027e-01},
   "porosity": {"unit": "-", "value": 0.25},
-  "density": {"unit": "kg/m3", "value": 1.657e+03},
+  "massLoading": {"unit": "kg/m2", "value": "compute"},
+  "density": {"unit": "kg/m3", "value": "compute"},
   "electrolyteBruggeman": {"unit": "-", "value": 1.5},
   "electrodeBruggeman": {"unit": "-", "value": 0.0},
   "electronicConductivity": {"unit": "S/m", "value": 2.15e+02},
@@ -49,7 +48,8 @@
       "lplOCP": {"unit": "V", "value": 0.0},
       "seiKineticConstant": {"unit": "m/s", "value": 1.0e-12},
       "lplExchangeCurrent": {"unit": "A/m**2", "value": 1.0e-3},
-      "seiVolumeFraction": {"unit": "-", "value": 0.05},
+      "seiElectronicConductivity": {"unit": "S/m", "value": 1.0e-4},
+      "lplElectronicConductivity": {"unit": "S/m", "value": 1.1e+7},
       "seiIonicConductivity": {"unit": "S/m", "value": 1.0e-2},
       "seiMass": {"unit":"kg/mol", "value":1.62e-1},
       "seiDensity": {"unit":"kg/m**3", "value":1.69e3},
@@ -57,6 +57,16 @@
       "lplDensity": {"unit":"kg/m**3", "value":5.34e2},
       "compute_maximumConcentration": 0,
       "compute_initialConcentration": 1
+    },
+    {
+      "name": "inactive",
+      "active": 0,
+      "weightFraction": {"unit": "-", "value": "compute"},
+      "volumeFraction": {"unit": "-", "value": 0.0},
+      "density": {"unit": "kg/m3", "value": 1.657e+03},
+      "electronicConductivity": {"unit": "S/m", "value": 2.15e+02},
+      "thermalConductivity": {"unit": "W/mK", "value": 1.7},
+      "heatCapacity": {"unit": "J/kg K", "value": 700}
     }
   ]
 }

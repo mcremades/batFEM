@@ -1,0 +1,82 @@
+{
+  "properties": {
+    "name": "ANR26650M1-AS",
+    "format": "26650",
+    "area": {"unit": "m^2", "value": "compute"},
+    "volume": {"unit": "m^3", "value": "compute"},
+    "mass": {"unit": "kg", "value": "compute"},
+    "density": {"unit": "kg/m^3", "value": "compute"},
+    "nominalCapacity": {"unit":"Ah","value": 2.3},
+    "minVoltage": {"unit": "V", "value": 2.0},
+    "maxVoltage": {"unit": "V", "value": 3.6},
+    "negative2positiveCapacityRatio": {"unit": "-", "value": 1.0, "opt":0,"lb":1.00,"ub":1.20},
+    "preformationLithium": {"unit": "moles", "value": 0.49, "opt":1,"lb":0.40,"ub":1.00},
+    "negativeFormationLithiumLoss": {"unit": "-", "value": 0.05},
+    "positiveFormationLithiumLoss": {"unit": "-", "value": 0.01},
+    "negativeElectrodeLayers": {"unit": "-", "value": 1},
+    "positiveElectrodeLayers": {"unit": "-", "value": 1},
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 5},
+    "heatConvectionArea": {"unit": "m**2", "value": 6.35e-3}
+  },
+  "negativeCurrentCollector": {
+    "file": "current_collectors/Cu.json",
+    "thickness": {"unit": "m", "value": 1.0e-5},
+    "area": {"unit": "m^2", "value": 1.80e-1}
+  },
+  "negativeElectrode": {
+    "file": "electrodes/NE_Prada2013.json",
+    "thickness": {"unit": "m", "value": "compute"},
+    "area": {"unit": "m^2", "value": 1.80e-1},
+    "massLoading": {"unit": "kg/m2", "value": 4.82e-02,"opt":1,"lb":0.01,"ub":0.10},
+    "density": {"unit": "kg/m3", "value": 1.418e+03,"opt":0,"lb":1.0e+03,"ub":2.0e+03},
+    "composition": [
+      {
+        "weightFraction": {"unit": "-", "value": 0.9997,"opt":1,"lb":0.75,"ub":0.9999},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 2.26e+03},
+        "particleRadius": {"unit": "m", "value": 5.0e-06,"opt":0,"lb":1.0e-6,"ub":1.0e-5}
+      },
+      {
+        "weightFraction": {"unit": "-", "value": "compute"},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 1.8e+03},
+        "electronicConductivity": {"unit": "S/m", "value": 1.00e+03}
+      }
+    ]
+  },
+  "separator": {
+    "file": "separators/Separator_Prada2013.json",
+    "thickness": {"unit": "m", "value": 2.5e-05},
+    "area": {"unit": "m^2", "value": 1.80e-1}
+  },
+  "positiveElectrode": {
+    "file": "electrodes/PE_Prada2013.json",
+    "thickness": {"unit": "m", "value": "compute"},
+    "area": {"unit": "m^2", "value": 1.80e-1},
+    "massLoading": {"unit": "kg/m2", "value": 9.57e-02,"opt":1,"lb":0.05,"ub":0.2},
+    "density": {"unit": "kg/m3", "value": 1.197e+03,"opt":0,"lb":1.0e+03,"ub":2.0e+03},
+    "composition": [
+      {
+        "weightFraction": {"unit": "-", "value": 0.9238,"opt":1,"lb":0.75,"ub":0.9999},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 3.2e+03},
+        "particleRadius": {"unit": "m", "value": 5.0e-8,"opt":0,"lb":1.0e-8,"ub":1.0e-6}
+      },
+      {
+        "weightFraction": {"unit": "-", "value": "compute"},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 1.8e+03},
+        "electronicConductivity": {"unit": "S/m", "value": 1.00e+03}
+      }
+    ]
+  },
+  "positiveCurrentCollector": {
+    "file": "current_collectors/Al.json",
+    "thickness": {"unit": "m", "value": 1.0e-5},
+    "area": {"unit": "m^2", "value": 1.80e-1}
+  },
+  "electrolyte": {
+    "file": "electrolytes/LiPF6_EC:EMC_Prada2013.json"
+  }
+}

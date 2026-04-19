@@ -46,15 +46,20 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.k_list = []
         self.q_list = []
 
+        self.delta_film_a_list=[]
+        self.eps_e_a_list=[]
+
         # TODO split in more functions
         self.R_s_a = []; self.R_film_a_ini = []; self.U_sei_a = []; self.U_lpl_a = []
         self.R_s_c = []; self.R_film_c_ini = []
 
-        self.k_0_sei_a = []; self.M_sei = []; self.rho_sei = []
-        self.i_0_lpl_a = []; self.M_lpl = []; self.rho_lpl = []
+        self.k_0_sei_a = []; self.M_sei_a = []; self.rho_sei_a = []
+        self.i_0_lpl_a = []; self.M_lpl_a = []; self.rho_lpl_a = []
 
-        self.eps_s_a = []; self.eps_sei_a = []; self.kappa_sei_a = []
-        self.eps_s_c = []; self.eps_sei_c = []; self.kappa_sei_c = []
+        self.eps_s_a = []; self.kappa_sei_a = []; self.sigma_sei_a = []; self.sigma_lpl_a = []
+        self.eps_i_a = []
+        self.eps_s_c = []; self.kappa_sei_c = []; self.sigma_sei_c = []
+        self.eps_i_c = []
 
         for material in cell.negativeElectrode.composition:
             if material.active == 1:
@@ -62,31 +67,36 @@ class PE_PE(batFEM.class_battery_model.Model):
                 self.eps_s_a.append(Constant(material.volumeFraction))
 
                 if self.solve_sei_a or self.solve_lpl_a:
-                    self.M_sei.append(Constant(material.seiMass))
-                    self.rho_sei.append(Constant(material.seiDensity))
+                    self.M_sei_a.append(Constant(material.seiMass))
+                    self.rho_sei_a.append(Constant(material.seiDensity))
                 if self.solve_sei_a:
                     self.U_sei_a.append(Constant(material.seiOCP))
                     self.k_0_sei_a.append(Constant(material.seiKineticConstant))
                 if self.solve_lpl_a:
                     self.U_lpl_a.append(Constant(material.lplOCP))
                     self.i_0_lpl_a.append(Constant(material.lplExchangeCurrent))
-                    self.M_lpl.append(Constant(material.lplMass))
-                    self.rho_lpl.append(Constant(material.lplDensity))
+                    self.M_lpl_a.append(Constant(material.lplMass))
+                    self.rho_lpl_a.append(Constant(material.lplDensity))
 
-                self.eps_sei_a.append(Constant(material.seiVolumeFraction))
                 self.kappa_sei_a.append(Constant(material.seiIonicConductivity))
+                self.sigma_sei_a.append(Constant(material.seiElectronicConductivity))
+                self.sigma_lpl_a.append(Constant(material.lplElectronicConductivity))
+            else:
+                self.eps_i_a.append(Constant(material.volumeFraction))
 
         for material in cell.positiveElectrode.composition:
             if material.active == 1:
                 self.R_s_c.append(Constant(material.particleRadius)); self.R_film_c_ini.append(Constant(material.filmRadius))
                 self.eps_s_c.append(Constant(material.volumeFraction))
-
-                self.eps_sei_c.append(Constant(material.seiVolumeFraction))
+                
                 self.kappa_sei_c.append(Constant(material.seiIonicConductivity))
+                self.sigma_sei_c.append(Constant(material.seiElectronicConductivity))
+            else:
+                self.eps_i_c.append(Constant(material.volumeFraction))
 
-        self.eps_e_a_ini = Constant(cell.negativeElectrode.porosity)
+        self.eps_e_a_ini = Constant(1)-self.eps_s_a[0]-self.eps_i_a[0]#Constant(cell.negativeElectrode.porosity)
         self.eps_e_s_ini = Constant(cell.separator.porosity)
-        self.eps_e_c_ini = Constant(cell.positiveElectrode.porosity)
+        self.eps_e_c_ini = Constant(1)-self.eps_s_c[0]-self.eps_i_c[0]#Constant(cell.positiveElectrode.porosity)
 
         self.bruggeman_e_a = Constant(cell.negativeElectrode.electrolyteBruggeman)
         self.bruggeman_e_s = Constant(cell.separator.bruggeman)
@@ -107,6 +117,7 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.rho_a = Constant(cell.negativeElectrode.density)
         self.rho_s = Constant(cell.separator.density)
         self.rho_c = Constant(cell.positiveElectrode.density)
+        self.rho_e = Constant(cell.electrolyte.density)
 
         self.c_p_a = Constant(cell.negativeElectrode.heatCapacity)
         self.c_p_s = Constant(cell.separator.heatCapacity)
@@ -313,7 +324,26 @@ class PE_PE(batFEM.class_battery_model.Model):
             self.U_c = batFEM.class_battery_model.get_interpolation(xy, type, opts)
         else:
             self.U_c = lambda x: eval(cell.positiveElectrode.composition[0].openCircuitPotential['value'])
+        
+        self.L_cc_a = Constant(cell.negativeCurrentCollector.thickness)
+        self.rho_cc_a = Constant(cell.negativeCurrentCollector.density)
+        self.L_cc_c = Constant(cell.positiveCurrentCollector.thickness)
+        self.rho_cc_c = Constant(cell.positiveCurrentCollector.density)
 
+        self.volume=(self.L_cc_a+self.L_a+self.L_s+self.L_c+self.L_cc_c)*self.area
+        #self.volume=(self.L_a+self.L_s+self.L_c)*self.area
+
+        #self.weight=(self.rho_a*(1-self.eps_e_a_ini)+self.rho_e*self.eps_e_a_ini)*self.L_a*self.area \
+        #           +(self.rho_s*(1-self.eps_e_s_ini)+self.rho_e*self.eps_e_s_ini)*self.L_s*self.area \
+        #           +(self.rho_c*(1-self.eps_e_c_ini)+self.rho_e*self.eps_e_c_ini)*self.L_c*self.area \
+        #           +self.rho_cc_a*self.L_cc_a*self.area \
+        #           +self.rho_cc_c*self.L_cc_c*self.area
+        self.weight=(self.rho_a*(1-self.eps_e_a_ini)+self.rho_e*self.eps_e_a_ini)*self.L_a*self.area \
+                   +(self.rho_s*(1-self.eps_e_s_ini)+self.rho_e*self.eps_e_s_ini)*self.L_s*self.area \
+                   +(self.rho_c*(1-self.eps_e_c_ini)+self.rho_e*self.eps_e_c_ini)*self.L_c*self.area \
+                   +self.rho_cc_a*self.L_cc_a*self.area \
+                   +self.rho_cc_c*self.L_cc_c*self.area
+        
     def initial_guess(self):
         pass
 

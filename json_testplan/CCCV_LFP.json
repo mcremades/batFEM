@@ -12,7 +12,7 @@
       "events":[
         {
           "type":"Voltage",
-          "value":4.2,
+          "value":3.6,
           "tol_a":1.0e-4,"tol_r":1.0e-4,
           "go to":"Next"
         }
@@ -21,7 +21,7 @@
     {
       "name":"CCV",
       "type":"CV",
-      "value": 4.2,
+      "value": 3.6,
       "events":[
         {
           "type":"Current",
@@ -44,7 +44,7 @@
         {
           "type":"Time",
           "value":900,
-          "tol_a":1.0e-4,"tol_r":1.0e-4,
+          "tol_a":1.0e-2,"tol_r":1.0e-2,
           "go to":"Next"
         }
       ]
@@ -56,8 +56,8 @@
       "events":[
         {
           "type":"Voltage",
-          "value":2.8,
-          "tol_a":1.0e-4,"tol_r":1.0e-4,
+          "value":2.6,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
           "go to":"Next"
         }
         ]
@@ -88,3 +88,4 @@
     }
   ]
 }
+

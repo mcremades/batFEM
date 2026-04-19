@@ -21,21 +21,25 @@ def build_machine(json_1,print_level=0):
     for step in json_1['steps']:
 
         steps_name.append(step['name'])
+        if 'temperature' in step:
+            temperature = step['temperature']
+        else:
+            temperature = json_1['exterior temperature']
 
         if step['type'] == 'Pause':
-            steps_dict[step['name']] = ConstantCurrent(0., name=step['name'],print_level=print_level)
+            steps_dict[step['name']] = ConstantCurrent(0., temperature=temperature, name=step['name'],print_level=print_level)
 
         elif step['type'] == 'CC':
             if 'value' in step:
-                steps_dict[step['name']] = ConstantCurrent(step['value'],name=step['name'],print_level=print_level)
+                steps_dict[step['name']] = ConstantCurrent(step['value'],temperature=temperature,name=step['name'],print_level=print_level)
             else:
-                steps_dict[step['name']] = ConstantCurrent(name=step['name'],print_level=print_level)
+                steps_dict[step['name']] = ConstantCurrent(temperature=temperature, name=step['name'],print_level=print_level)
 
         elif step['type'] == 'CV':
             if 'value' in step:
-                steps_dict[step['name']] = ConstantVoltage(step['value'], name=step['name'],print_level=print_level)
+                steps_dict[step['name']] = ConstantVoltage(step['value'], temperature=temperature, name=step['name'],print_level=print_level)
             else:
-                steps_dict[step['name']] = ConstantVoltage(name=step['name'], print_level=print_level)
+                steps_dict[step['name']] = ConstantVoltage(temperature=temperature, name=step['name'], print_level=print_level)
 
         else:
             raise NameError('Incorrect step type...')
@@ -50,10 +54,11 @@ def build_machine(json_1,print_level=0):
             if event['go to'] == 'End':
                 aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict['End'],print_level=print_level)
             else:
+                reset = True if 'reset_count' in event else False
                 if event['go to'] == 'Next':
-                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[steps_name[i+1]],print_level=print_level)
+                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[steps_name[i+1]],reset,print_level=print_level)
                 else:
-                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[event['go to']],print_level=print_level)
+                    aux = fatDAE.class_machine.Transition(steps_dict[steps_name[i]], steps_dict[event['go to']],reset,print_level=print_level)
 
             if event['type'] == 'Time':
                 evt = fatDAE.class_machine.Wait(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
@@ -75,7 +80,7 @@ def build_machine(json_1,print_level=0):
                 evt = WhTotal(event['value'],event['tol_a'],event['tol_r'],print_level=print_level)
 
             elif event['type'] == 'MaxCycles':
-                evt = fatDAE.class_machine.MaxCycles(event['value'],print_level=print_level)
+                evt = fatDAE.class_machine.MaxCycles(event['value'])
 
             aux.add_events(evt)
 
@@ -520,7 +525,7 @@ class BatteryState(fatDAE.class_machine.State):
 
     def exec_out(self, params, reset=False):
 
-        fatDAE.class_machine.State.exec_out(self, params)
+        fatDAE.class_machine.State.exec_out(self, params, reset)
 
         if self.print_level > -1:
             print('Ah_total:', self.params['Ah_total'])
@@ -548,12 +553,13 @@ class ConstantCurrent(BatteryState):
     ''' Constant current operation mode.
     '''
 
-    def __init__(self, i=None, name='CC',print_level=0):
+    def __init__(self, i=None, temperature=None, name='CC',print_level=0):
 
         fatDAE.class_machine.State.__init__(self, name)
 
         self.i = i
         self.t = 0.
+        self.T_ext = temperature
 
         self.params['Ah']=0.
         self.params['Ah_total']=0.
@@ -585,6 +591,9 @@ class ConstantCurrent(BatteryState):
             params['problem'].set_current()
         else:
             params['problem'].set_current(self.i)
+        
+        if self.T_ext != None:
+            params['problem'].set_temperature(self.T_ext)
 
         self.params['Ah']=0.
         self.params['Wh']=0.
@@ -601,12 +610,13 @@ class ConstantVoltage(BatteryState):
     ''' Constant voltage operation mode.
     '''
 
-    def __init__(self, v=None, name='CV',print_level=0):
+    def __init__(self, v=None, temperature=None, name='CV',print_level=0):
 
         fatDAE.class_machine.State.__init__(self, name)
 
         self.v = v
         self.t = 0.
+        self.T_ext = temperature
 
         self.params['Ah']=0.
         self.params['Ah_total']=0.
@@ -638,6 +648,9 @@ class ConstantVoltage(BatteryState):
             params['problem'].set_voltage()
         else:
             params['problem'].set_voltage(self.v)
+
+        if self.T_ext != None:
+            params['problem'].set_temperature(self.T_ext)
 
         self.params['Ah']=0.
         self.params['Wh']=0.

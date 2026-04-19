@@ -1,0 +1,22 @@
+{
+  "initial values":
+  {
+    "SOC":1.0,
+    "exterior temperature": 298.15
+  },
+  "steps":[
+    {
+      "name":"DCC",
+      "type":"CC",
+      "value":-1.0,
+      "events":[
+        {
+          "type":"Voltage",
+          "value":2.8,
+          "tol_a":1.0e-3,"tol_r":1.0e-3,
+          "go to":"Next"
+        }
+        ]
+    }
+  ]
+}

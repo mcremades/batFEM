@@ -46,6 +46,8 @@
       "filmRadius": {"unit": "m", "value": 1.0e-12},
       "seiOCP": {"unit": "V", "value": 0.5},
       "seiKineticConstant": {"unit": "m/s", "value": 1.0e-12},
+      "seiElectronicConductivity": {"unit": "S/m", "value": 1.0e-4},
+      "lplElectronicConductivity": {"unit": "S/m", "value": 1.1e+7},
       "seiVolumeFraction": {"unit": "-", "value": 0.05},
       "seiIonicConductivity": {"unit": "S/m", "value": 1.0e-2},
       "seiMass": {"unit":"kg/mol", "value":1.62e-1},

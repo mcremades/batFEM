@@ -41,7 +41,7 @@ def get_interpolation(xv, type, opts):
 
 class Model:
 
-    def setup(self,i_app=0):
+    def setup(self,i_app=0,T_ext=298.15):
 
         self.build_fs()
 
@@ -49,6 +49,7 @@ class Model:
 
         self.v_app = Expression('value', degree=0, value=0)
         self.i_app = Expression('value', degree=0, value=i_app)
+        self.T_ext = Expression('value', degree=0, value=298.15)
 
         self.initial_guess()
 
@@ -227,6 +228,13 @@ class Model:
         self.ce_avg_s_list.append(ce_avg_s)
         self.ce_avg_c_list.append(ce_avg_c)
 
+        delta_film_a = self.get_delta_film_a(x)
+        self.delta_film_a_list.append(delta_film_a)
+
+        eps_e_a = self.get_eps_e_a(x)
+        self.eps_e_a_list.append(eps_e_a)
+
+
     def get_ene(self):
         return numpy.trapezoid(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / 3600.
 
@@ -250,6 +258,12 @@ class Model:
             self.i_app.value = self.get_current(self.u_0.vector()[:])
         else:
             self.i_app.value = i
+    def set_temperature(self, T=None):
+
+        if T == None:
+            self.T_ext.value = self.get_temperature(self.u_0.vector()[:])
+        else:
+            self.T_ext.value = T
 
     def get_brug_e_a(self, x):
         return x * self.eps_e_a_1 / self.tortuosity_e_a
@@ -289,35 +303,24 @@ class Model:
         numpy.savetxt(os.path.join(self.save_path,'voltage.txt'), self.v_list)
         numpy.savetxt(os.path.join(self.save_path,'temperature.txt'), self.k_list)
 
-        numpy.savetxt(os.path.join(self.save_path,'xs_avg_a.txt'), self.xs_avg_a_list)
-        numpy.savetxt(os.path.join(self.save_path,'xs_avg_c.txt'), self.xs_avg_c_list)
-        numpy.savetxt(os.path.join(self.save_path,'xs_sur_a.txt'), self.xs_sur_a_list)
-        numpy.savetxt(os.path.join(self.save_path,'xs_sur_c.txt'), self.xs_sur_c_list)
+        if write_level > 0:
+
+            numpy.savetxt(os.path.join(self.save_path,'xs_avg_a.txt'), self.xs_avg_a_list)
+            numpy.savetxt(os.path.join(self.save_path,'xs_avg_c.txt'), self.xs_avg_c_list)
+            numpy.savetxt(os.path.join(self.save_path,'xs_sur_a.txt'), self.xs_sur_a_list)
+            numpy.savetxt(os.path.join(self.save_path,'xs_sur_c.txt'), self.xs_sur_c_list)
+
+            numpy.savetxt(os.path.join(self.save_path,'delta_film_a.txt'), self.delta_film_a_list)
+            numpy.savetxt(os.path.join(self.save_path,'eps_e_a.txt'), self.eps_e_a_list)
+
+            dir_path = os.path.join(self.save_path, state_name, str(state_number))
+            os.makedirs(dir_path, exist_ok=True)
         
-        #if write_level > 0:
-        #    dir_path = os.path.join(self.save_path, state_name, str(state_number))
-        #    os.makedirs(dir_path, exist_ok=True)
-        
-            
+            numpy.savetxt(os.path.join(dir_path,'time.txt'), self.t_dict[state_name][state_number])
+            numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
+            numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
+            numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
 
-        #    numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
-        #    numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
-
-        #    numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
-
-        #    numpy.savetxt(os.path.join(dir_path,'time.txt'), self.t_dict[state_name][state_number])
-
-        #    numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
-        #    numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
-
-        #    numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
-
-            #self.t_dict[state_name][state_number] = []
-
-            #self.i_dict[state_name][state_number] = []
-            #self.v_dict[state_name][state_number] = []
-
-            #self.k_dict[state_name][state_number] = []
 
     def tstep_ie(self, h=10, i_app = 30.0):
 

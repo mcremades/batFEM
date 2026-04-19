@@ -26,8 +26,9 @@ class ActiveMaterial(Material):
 
         self.theoreticalCapacity = data['theoreticalCapacity']['value']; self.particleRadius = data['particleRadius']['value']; self.diffusionConstant = data['diffusionConstant']
         self.filmRadius = data['filmRadius']['value']
-        self.seiVolumeFraction = data['seiVolumeFraction']['value']
         self.seiIonicConductivity = data['seiIonicConductivity']['value']
+        self.seiElectronicConductivity = data['seiElectronicConductivity']['value']
+        self.lplElectronicConductivity = data['lplElectronicConductivity']['value']
 
         if 'seiOCP' in data:
             self.seiOCP = data['seiOCP']['value']
@@ -124,25 +125,27 @@ def vf_formulation(cell_json, compute_stoichiometries=False, num_electrodes_n=1,
 
     # Requirements
     epss_p = cell_json['positiveElectrode']['composition'][0]['volumeFraction']['value']
-    epse_p = cell_json['positiveElectrode']['porosity']['value']
+    epsi_p = cell_json['positiveElectrode']['composition'][1]['volumeFraction']['value']
+    #epse_p = cell_json['positiveElectrode']['porosity']['value']
     rhos_p = cell_json['positiveElectrode']['composition'][0]['density']['value']
     rhoi_p = cell_json['positiveElectrode']['composition'][1]['density']['value']
     L_p = cell_json['positiveElectrode']['thickness']['value']
 
     epss_n = cell_json['negativeElectrode']['composition'][0]['volumeFraction']['value']
-    epse_n = cell_json['negativeElectrode']['porosity']['value']
+    epsi_n = cell_json['negativeElectrode']['composition'][1]['volumeFraction']['value']
+    #epse_n = cell_json['negativeElectrode']['porosity']['value']
     rhos_n = cell_json['negativeElectrode']['composition'][0]['density']['value']
     rhoi_n = cell_json['negativeElectrode']['composition'][1]['density']['value']
     L_n = cell_json['negativeElectrode']['thickness']['value']
 
     # Computations
-    epsi_p = 1 - epss_p - epse_p
+    epse_p = 1 - epss_p - epsi_p
     rho_p = epss_p*rhos_p + epsi_p*rhoi_p
     m_l_p = L_p * rho_p
     ws_p = epss_p*rhos_p/rho_p
     wi_p = epsi_p*rhoi_p/rho_p
 
-    epsi_n = 1 - epss_n - epse_n
+    epse_n = 1 - epss_n - epsi_n
     rho_n = epss_n*rhos_n + epsi_n*rhoi_n
     m_l_n = L_n * rho_n
     ws_n = epss_n*rhos_n/rho_n
@@ -153,11 +156,13 @@ def vf_formulation(cell_json, compute_stoichiometries=False, num_electrodes_n=1,
     cell_json['positiveElectrode']['density']['value'] = rho_p
     cell_json['positiveElectrode']['composition'][0]['weightFraction']['value'] = ws_p
     cell_json['positiveElectrode']['composition'][1]['weightFraction']['value'] = wi_p
+    cell_json['positiveElectrode']['porosity']['value'] = epse_p
 
     cell_json['negativeElectrode']['massLoading']['value'] = m_l_n
     cell_json['negativeElectrode']['density']['value'] = rho_n
     cell_json['negativeElectrode']['composition'][0]['weightFraction']['value'] = ws_n
     cell_json['negativeElectrode']['composition'][1]['weightFraction']['value'] = wi_n
+    cell_json['negativeElectrode']['porosity']['value'] = epse_n
 
     #print('neg. active wf:',cell_json['negativeElectrode']['composition'][0]['weightFraction']['value'])
     #print('neg. inactive wf:',cell_json['negativeElectrode']['composition'][1]['weightFraction']['value'])

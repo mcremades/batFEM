@@ -1,0 +1,84 @@
+{
+  "properties": {
+    "name": "SLPB 75106100",
+    "format": "Pouch",
+    "area": {"unit": "m^2", "value": "compute"},
+    "volume": {"unit": "m^3", "value": "compute"},
+    "mass": {"unit": "kg", "value": "compute"},
+    "density": {"unit": "kg/m^3", "value": "compute"},
+    "nominalCapacity": {"unit":"Ah","value":7.5},
+    "minVoltage": {"unit": "V", "value": 2.5},
+    "maxVoltage": {"unit": "V", "value": 4.2},
+    "negative2positiveCapacityRatio": {"unit": "-", "value": 1.0, "opt":0,"lb":1.00,"ub":1.20},
+    "preformationLithium": {"unit": "moles", "value": 1.00, "opt":1,"lb":0.80,"ub":1.20},
+    "negativeFormationLithiumLoss": {"unit": "-", "value": 0.05},
+    "positiveFormationLithiumLoss": {"unit": "-", "value": 0.01},
+    "negativeElectrodeLayers": {"unit": "-", "value": 24},
+    "positiveElectrodeLayers": {"unit": "-", "value": 25},
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value": 5},
+    "heatConvectionArea": {"unit": "m**2", "value": 1.72e-02}
+  },
+  "negativeCurrentCollector": {
+    "file": "current_collectors/Cu.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 8.96e-03}
+  },
+  "negativeElectrode": {
+    "file": "electrodes/NE_Ecker2015.json",
+    "thickness": {"unit": "m", "value": "compute"},
+    "area": {"unit": "m^2", "value": 8.96e-03},
+    "massLoading": {"unit": "kg/m2", "value": 0.1135,"opt":1,"lb":0.1,"ub":0.3},
+    "density": {"unit": "kg/m3", "value": 1.555e+03,"opt":0,"lb":1.5e+03,"ub":2.0e+03},
+    "composition": [
+      {
+        "weightFraction": {"unit": "-", "value": 0.5405,"opt":1,"lb":0.50,"ub":0.995},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 2.26e+03},
+        "particleRadius": {"unit": "m", "value": 1.37e-05,"opt":0,"lb":1.0e-06,"ub":2.0e-05},
+        "electronicConductivity": {"unit": "S/m", "value": 1.00e+02}
+      },
+      {
+        "weightFraction": {"unit": "-", "value": "compute"},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 2.39e+03},
+        "electronicConductivity": {"unit": "S/m", "value": 1.00e+02}
+      }
+    ]
+  },
+  "separator": {
+    "file": "separators/Separator_Ecker2015.json",
+    "thickness": {"unit": "m", "value": 2.4e-05},
+    "area": {"unit": "m^2", "value": 8.96e-03}
+  },
+  "positiveElectrode": {
+    "file": "electrodes/PE_Ecker2015.json",
+    "thickness": {"unit": "m", "value": "compute"},
+    "area": {"unit": "m^2", "value": 8.58e-03},
+    "massLoading": {"unit": "kg/m2", "value": 0.1563,"opt":1,"lb":0.1,"ub":0.3},
+    "density": {"unit": "kg/m3", "value": 2.895e+03,"opt":0,"lb":2.5e+03,"ub":3.5e+03},
+    "composition": [
+      {
+        "weightFraction": {"unit": "-", "value": 0.8159,"opt":1,"lb":0.50,"ub":0.995},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 5.79e+03},
+        "particleRadius": {"unit": "m", "value": 6.5e-06,"opt":0,"lb":1.0e-06,"ub":1.5e-05},
+        "electronicConductivity": {"unit": "S/m", "value": 1.00e+01}
+      },
+      {
+        "weightFraction": {"unit": "-", "value": "compute"},
+        "volumeFraction": {"unit": "-", "value": "compute"},
+        "density": {"unit": "kg/m3", "value": 1.80e+03},
+        "electronicConductivity": {"unit": "S/m", "value": 1.00e+02}
+      }
+    ]
+  },
+  "positiveCurrentCollector": {
+    "file": "current_collectors/Al.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 8.58e-03}
+  },
+  "electrolyte": {
+    "file": "electrolytes/LiPF6_EC:DMC_Ecker2015.json"
+  }
+}

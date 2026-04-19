@@ -11,16 +11,16 @@
     "SGM order c": 4
   },
   "time discretization": {
-    "type": "RW",
-    "name": "ROW3P", "mode": "adaptive",
+    "type": "ESDIRK",
+    "name": "ESDIRK4", "mode": "adaptive",
     "embedded": 0
   },
   "timestepping properties":{
     "initial step size": 1.0e+00,
-    "min step size": 1.0e-08,
+    "min step size": 1.0e-06,
     "max step size": 6.0e+01,
     "abs tolerance": 1.0e-06,
-    "rel tolerance": 1.0e-03
+    "rel tolerance": 1.0e-02
   },
   "output and storage": {
     "store level": 1,
