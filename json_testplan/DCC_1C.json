@@ -8,6 +8,7 @@
     {
       "name":"DCC",
       "type":"CC",
+      "temperature":283.15,
       "value":-1.0,
       "events":[
         {

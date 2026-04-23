@@ -12,7 +12,7 @@
   },
   "time discretization": {
     "type": "RW",
-    "name": "ROW3P", "mode": "adaptive",
+    "name": "ROW4PW2", "mode": "adaptive",
     "embedded": 0
   },
   "timestepping properties":{

@@ -309,7 +309,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                 + (self.lm_c_e_as_1/self.eps_e_a_1) * self.c_e_a * self.ds(2)
 
         for i in range(len(self.eps_s_a)):
-            F_c_e_a -= self.L_a * ((1 - self.t_p_a) / (self.F*self.eps_e_a_1)) * self.j_tot_a[i] * self.c_e_a * self.dx
+            F_c_e_a -= self.L_a * ((1 - self.t_p_a) / self.eps_e_a_1) * self.j_tot_a[i] * self.c_e_a * self.dx
 
         F_c_e_s = self.L_s * dc_e_sdt * self.c_e_s * self.dx + (1. / self.L_s) * inner((self.D_e_s) * grad(self.c_e_s_1), grad(self.c_e_s / self.eps_e_s_1)) * self.dx \
                 - (self.lm_c_e_as_1/self.eps_e_s_1) * self.c_e_s * self.ds(1) \
@@ -319,7 +319,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                 - (self.lm_c_e_sc_1/self.eps_e_c_1) * self.c_e_c * self.ds(1)
 
         for i in range(len(self.eps_s_c)):
-            F_c_e_c -= self.L_c * ((1 - self.t_p_c) / (self.F*self.eps_e_c_1)) * self.j_tot_c[i] * self.c_e_c * self.dx
+            F_c_e_c -= self.L_c * ((1 - self.t_p_c) / self.eps_e_c_1) * self.j_tot_c[i] * self.c_e_c * self.dx
 
         F_c_e = F_c_e_a + self.F_lm_c_e_as \
               + F_c_e_s \
@@ -338,7 +338,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                         dc_s_adt = split(self.dc_s_adt)[i]
                     F_c_s_a = F_c_s_a + self.M_c_s_a[i,j]*dc_s_adt * split(self.c_s_a)[j] * self.dx \
                                       + (self.D_s_a/self.R_s_a[0]**2)*self.K_c_s_a[i,j] * split(self.c_s_a_1)[i] * split(self.c_s_a)[j] * self.dx
-                F_c_s_a = F_c_s_a + (1./self.R_s_a[0]) * (1. / (self.a_s_a[0]*self.F)) * self.P_c_s_a[j] * self.j_Li_a_1[0] * split(self.c_s_a)[j] * self.dx
+                F_c_s_a = F_c_s_a + (1./self.R_s_a[0]) * self.P_c_s_a[j] * self.j_Li_a_1[0] * split(self.c_s_a)[j] * self.dx
             F_c_s_c = 0
             for j in range(self.SGM_order_c):
                 for i in range(self.SGM_order_c):
@@ -348,7 +348,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                         dc_s_cdt = split(self.dc_s_cdt)[i]
                     F_c_s_c = F_c_s_c + self.M_c_s_c[i,j]*dc_s_cdt * split(self.c_s_c)[j] * self.dx \
                                       + (self.D_s_c/self.R_s_c[0]**2)*self.K_c_s_c[i,j] * split(self.c_s_c_1)[i] * split(self.c_s_c)[j] * self.dx
-                F_c_s_c = F_c_s_c + (1./self.R_s_c[0]) * (1. / (self.a_s_c[0]*self.F)) * self.P_c_s_c[j] * self.j_Li_c_1[0] * split(self.c_s_c)[j] * self.dx
+                F_c_s_c = F_c_s_c + (1./self.R_s_c[0]) * self.P_c_s_c[j] * self.j_Li_c_1[0] * split(self.c_s_c)[j] * self.dx
             
             F_c_s = F_c_s_a + self.F_c_s_sur_a + self.F_c_s_avg_a \
                   + F_c_s_c + self.F_c_s_sur_c + self.F_c_s_avg_c
@@ -366,7 +366,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                     dc_s_avg_adt = split(self.dc_s_avg_adt)[i]
 
                 F_c_s_avg_a = F_c_s_avg_a + dc_s_avg_adt * split(self.c_s_avg_a)[i] * self.dx \
-                            + 3 * (self.j_Li_a_1[i] / (self.F * self.a_s_a[i] * self.R_s_a[i])) * split(self.c_s_avg_a)[i] * self.dx
+                            + 3 * (self.j_Li_a_1[i] / self.R_s_a[i]) * split(self.c_s_avg_a)[i] * self.dx
             for i in range(len(self.eps_s_c)):
                 if td:
                     dc_s_avg_cdt = (split(self.c_s_avg_c_1)[i]-split(self.c_s_avg_c_0)[i]) / self.Deltat
@@ -374,7 +374,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                     dc_s_avg_cdt = split(self.dc_s_avg_cdt)[i]
 
                 F_c_s_avg_c = F_c_s_avg_c + dc_s_avg_cdt * split(self.c_s_avg_c)[i] * self.dx \
-                            + 3 * (self.j_Li_c_1[i] / (self.F * self.a_s_c[i] * self.R_s_c[i])) * split(self.c_s_avg_c)[i] * self.dx
+                            + 3 * (self.j_Li_c_1[i] / self.R_s_c[i]) * split(self.c_s_avg_c)[i] * self.dx
 
             F_c_s = F_c_s_a + self.F_c_s_sur_a + F_c_s_avg_a \
                   + F_c_s_c + self.F_c_s_sur_c + F_c_s_avg_c
@@ -529,11 +529,11 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.Z_int_c = []; self.Z_sei_c = []
 
         for i in range(len(self.eps_s_a)):
-            j_tot = self.j_Li_a_1[i]
+            j_tot = self.a_s_a[i]*self.j_Li_a_1[i]
             if self.solve_sei_a:
-                j_tot += self.j_sei_a_1[i]
+                j_tot += self.a_s_a[i]*self.j_sei_a_1[i]
             if self.solve_lpl_a:
-                j_tot += self.j_lpl_a_1[i]
+                j_tot += self.a_s_a[i]*self.j_lpl_a_1[i]
             self.j_tot_a.append(j_tot)
 
             if self.solve_sei_a:
@@ -560,7 +560,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             self.Z_lpl_a.append(Z_lpl_a)
 
         for i in range(len(self.eps_s_c)):
-            j_tot = self.j_Li_c_1[i]
+            j_tot = self.a_s_c[i]*self.j_Li_c_1[i]
             self.j_tot_c.append(j_tot)
 
             self.Z_int_c.append(self.R_film_c_1[i]/self.kappa_sei_c[i])
@@ -570,18 +570,18 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.eta_c = []
 
         for i in range(len(self.eps_s_a)):
-            self.eta_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_int_a[i] * self.j_tot_a[i] / self.a_s_a[i] - self.U_a(split(self.c_s_sur_a_1)[i]/self.c_s_a_max))
+            self.eta_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_int_a[i] * self.F * self.j_Li_a_1[i] - self.U_a(split(self.c_s_sur_a_1)[i]/self.c_s_a_max))
         for i in range(len(self.eps_s_c)):
-            self.eta_c.append(self.phi_s_c_1 - self.phi_e_c_1 - self.Z_int_c[i] * self.j_tot_c[i] / self.a_s_c[i] - self.U_c(split(self.c_s_sur_c_1)[i]/self.c_s_c_max))
+            self.eta_c.append(self.phi_s_c_1 - self.phi_e_c_1 - self.Z_int_c[i] * self.F * self.j_Li_c_1[i] - self.U_c(split(self.c_s_sur_c_1)[i]/self.c_s_c_max))
 
         self.eta_sei_a = []
         self.eta_lpl_a = []
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                self.eta_sei_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_sei_a[i] * self.j_tot_a[i] / self.a_s_a[i] - self.U_sei_a[i])
+                self.eta_sei_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_sei_a[i] * self.F * self.j_sei_a[i] - self.U_sei_a[i])
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                self.eta_lpl_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_lpl_a[i] * self.j_tot_a[i] / self.a_s_a[i] - self.U_lpl_a[i])
+                self.eta_lpl_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_lpl_a[i] * self.F * self.j_lpl_a[i] - self.U_lpl_a[i])
 
         i_0_a = []
         i_0_c = []
@@ -590,12 +590,6 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             i_0_a.append(self.F * self.k_0_a * self.c_e_a_1 ** self.alpha * (self.c_s_a_max - split(self.c_s_sur_a_1)[i]) ** self.alpha * (split(self.c_s_sur_a_1)[i]) ** self.alpha)
         for i in range(len(self.eps_s_c)):
             i_0_c.append(self.F * self.k_0_c * self.c_e_c_1 ** self.alpha * (self.c_s_c_max - split(self.c_s_sur_c_1)[i]) ** self.alpha * (split(self.c_s_sur_c_1)[i]) ** self.alpha)
-
-        self.i_0_sei_a = []
-        if self.solve_sei_a:
-            for i in range(len(self.eps_s_a)):
-                #self.i_0_sei_a.append(self.F * self.k_0_sei_a[i] * split(self.c_ec_s_a_1)[i])
-                self.i_0_sei_a.append(self.F * self.k_0_sei_a[i])
 
         E_a = []
         E_c = []
@@ -610,17 +604,25 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                E_a_sei.append(exp(-self.alpha * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i]))
+                E_a = exp(+self.alpha_sei_a * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i]) \
+                    - exp(-self.alpha_sei_c * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i])
+                E_a_sei.append(E_a)
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                E_a_lpl.append(exp(-self.alpha * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]))
+                Mf_sei = self.M_sei_a[i]/self.rho_sei_a[i]
+                Mf_lpl = self.M_lpl_a[i]/self.rho_lpl_a[i]
+                eps_lpl = (Mf_lpl*self.c_lpl_a_1[i]/(Mf_sei*self.c_sei_a_1[i]+Mf_lpl*self.c_lpl_a_1[i]))
+
+                E_a = exp(+self.alpha_lpl_a * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]) * (1-exp(eps_lpl))\
+                    - exp(-self.alpha_lpl_c * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i])
+                E_a_lpl.append(E_a)
 
         self.q_a = 0
         self.q_a += self.sigma_a * (1/self.L_a**2) * inner(grad(self.phi_s_a_1), grad(self.phi_s_a_1))
         self.q_a += self.kappa_a * (1/self.L_a**2) * inner(grad(self.phi_e_a_1), grad(self.phi_e_a_1))
         self.q_a += self.kappa_D_c * (1/self.c_e_a_1) * (1/self.L_a**2) *  inner(grad(self.c_e_a_1), grad(self.phi_e_a_1))
         for i in range(len(self.eps_s_a)):
-            self.q_a += self.j_Li_a_1[i] * self.eta_a[i]
+            self.q_a += self.F * self.a_s_a[i] * self.j_Li_a_1[i] * self.eta_a[i]
 
         self.q_s = 0
         self.q_s += self.kappa_s * (1/self.L_s**2) * inner(grad(self.phi_e_s_1), grad(self.phi_e_s_1))
@@ -631,7 +633,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.q_c += self.kappa_c * (1/self.L_c**2) * inner(grad(self.phi_e_c_1), grad(self.phi_e_c_1))
         self.q_c += self.kappa_D_c * (1/self.c_e_c_1) * (1/self.L_c**2) *  inner(grad(self.c_e_c_1), grad(self.phi_e_c_1))
         for i in range(len(self.eps_s_c)):
-            self.q_c += self.j_Li_c_1[i] * self.eta_c[i]
+            self.q_c += self.F * self.a_s_c[i] * self.j_Li_c_1[i] * self.eta_c[i]
 
         # c_e_0
 
@@ -682,7 +684,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                   + (1/self.L_a) * inner(self.kappa_D_a * (1/self.c_e_a_1) * grad(self.c_e_a_1), grad(self.phi_e_a)) * self.dx
 
         for i in range(len(self.eps_s_a)):
-            F_phi_e_a -= self.L_a * self.j_tot_a[i] * self.phi_e_a * self.dx
+            F_phi_e_a -= self.L_a * self.F * self.j_tot_a[i] * self.phi_e_a * self.dx
 
         F_phi_e_s = (1/self.L_s) * inner(self.kappa_s * grad(self.phi_e_s_1), grad(self.phi_e_s)) * self.dx \
                   + self.lm_phi_e_sc_1 * self.phi_e_s * self.ds(2) - self.lm_phi_e_as_1 * self.phi_e_s * self.ds(1) \
@@ -693,7 +695,7 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                   + (1/self.L_c) * inner(self.kappa_D_c * (1/self.c_e_c_1) * grad(self.c_e_c_1), grad(self.phi_e_c)) * self.dx
 
         for i in range(len(self.eps_s_c)):
-            F_phi_e_c -= self.L_c * self.j_tot_c[i] * self.phi_e_c * self.dx
+            F_phi_e_c -= self.L_c * self.F * self.j_tot_c[i] * self.phi_e_c * self.dx
 
         F_lm_phi_e_as = self.phi_e_a_1 * self.lm_phi_e_as * self.ds(2) - self.phi_e_s_1 * self.lm_phi_e_as * self.ds(1)
         F_lm_phi_e_sc = self.phi_e_s_1 * self.lm_phi_e_sc * self.ds(2) - self.phi_e_c_1 * self.lm_phi_e_sc * self.ds(1)
@@ -708,13 +710,13 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                   + self.lm_app_1 * self.phi_s_a * self.ds(1)
 
         for i in range(len(self.eps_s_a)):
-            F_phi_s_a += self.L_a * self.j_tot_a[i] * self.phi_s_a * self.dx
+            F_phi_s_a += self.L_a * self.F * self.j_tot_a[i] * self.phi_s_a * self.dx
 
         F_phi_s_c = (1. / self.L_c) * inner(self.sigma_c * grad(self.phi_s_c_1), grad(self.phi_s_c)) * self.dx \
                   - self.lm_app_1 * self.phi_s_c * self.ds(2)
 
         for i in range(len(self.eps_s_c)):
-            F_phi_s_c += self.L_c * self.j_tot_c[i] * self.phi_s_c * self.dx
+            F_phi_s_c += self.L_c * self.F * self.j_tot_c[i] * self.phi_s_c * self.dx
 
         self.F_phi_s = F_phi_s_a \
                      + F_phi_s_c \
@@ -725,9 +727,9 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         F_j_Li_c = 0
 
         for i in range(len(self.eps_s_a)):
-            F_j_Li_a += self.j_Li_a_1[i] * self.j_Li_a[i] * self.dx - self.a_s_a[i] * i_0_a[i] * E_a[i] * self.j_Li_a[i] * self.dx
+            F_j_Li_a += self.j_Li_a_1[i] * self.j_Li_a[i] * self.dx - (i_0_a[i]/self.F) * E_a[i] * self.j_Li_a[i] * self.dx
         for i in range(len(self.eps_s_c)):
-            F_j_Li_c += self.j_Li_c_1[i] * self.j_Li_c[i] * self.dx - self.a_s_c[i] * i_0_c[i] * E_c[i] * self.j_Li_c[i] * self.dx
+            F_j_Li_c += self.j_Li_c_1[i] * self.j_Li_c[i] * self.dx - (i_0_c[i]/self.F) * E_c[i] * self.j_Li_c[i] * self.dx
 
         self.F_j_Li = F_j_Li_a \
                     + F_j_Li_c
@@ -737,12 +739,12 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.F_j_sei_a = 0
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                self.F_j_sei_a += self.j_sei_a_1[i] * self.j_sei_a[i] * self.dx + self.a_s_a[i] * self.i_0_sei_a[i] * E_a_sei[i] * self.j_sei_a[i] * self.dx
+                self.F_j_sei_a += self.j_sei_a_1[i] * self.j_sei_a[i] * self.dx + (self.i_0_sei_a[i]/self.F) * E_a_sei[i] * self.j_sei_a[i] * self.dx
         # j_lpl
         self.F_j_lpl_a = 0
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                self.F_j_lpl_a += self.j_lpl_a_1[i] * self.j_lpl_a[i] * self.dx + self.a_s_a[i] * self.i_0_lpl_a[i] * E_a_lpl[i] * self.j_lpl_a[i] * self.dx
+                self.F_j_lpl_a += self.j_lpl_a_1[i] * self.j_lpl_a[i] * self.dx + (self.i_0_lpl_a[i]/self.F) * E_a_lpl[i] * self.j_lpl_a[i] * self.dx
 
         # R_0
         F_R_film_a_0 = 0
