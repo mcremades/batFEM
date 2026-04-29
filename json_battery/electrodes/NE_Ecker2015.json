@@ -30,6 +30,7 @@
                               "activationEnergy": {"unit":"J/mol", "value":53400},
                               "referenceTemperature": {"unit":"K", "value":296.15}
                             }},
+      "alpha_c": {"unit":"-","value":0.5},
       "maximumConcentration": {"unit": "mol/m**3", "value": 31920.00},
       "initialConcentration": {"unit": "mol/m**3", "value": 26120.05},
       "diffusionConstant": {"unit": "m**2/s", 
@@ -44,10 +45,10 @@
                                "value": "0.716502*exp(-369.028*x)+0.12193*exp(-35.6478*(x-0.0530947))-0.0189193*tanh(21.1967*(x-0.196176))-0.0169644*tanh(27.1365*(x-0.312832))-0.0199313*tanh(28.5697*(x-0.614221))-0.931153*exp(36.328*(x-1.10743))+0.140031"
       },
       "filmRadius": {"unit": "m", "value": 1.0e-9},
-      "seiOCP": {"unit": "V", "value": 0.5},
+      "seiOCP": {"unit": "V", "value": 0.4},
       "lplOCP": {"unit": "V", "value": 0.0},
-      "seiKineticConstant": {"unit": "m/s", "value": 1.0e-12},
-      "lplExchangeCurrent": {"unit": "A/m**2", "value": 1.0e-3},
+      "seiKineticConstant": {"unit": "mol/(m**2*s)", "value": 1.0e-13},
+      "lplExchangeCurrent": {"unit": "A/m**2", "value": 1.0},
       "seiElectronicConductivity": {"unit": "S/m", "value": 1.0e-4},
       "lplElectronicConductivity": {"unit": "S/m", "value": 1.1e+7},
       "seiIonicConductivity": {"unit": "S/m", "value": 1.0e-2},
@@ -55,6 +56,8 @@
       "seiDensity": {"unit":"kg/m**3", "value":1.69e3},
       "lplMass": {"unit":"kg/mol", "value":6.94e-3},
       "lplDensity": {"unit":"kg/m**3", "value":5.34e2},
+      "seiAlpha_c": {"unit":"-","value":1.0},
+      "lplAlpha_c": {"unit":"-","value":0.9},
       "compute_maximumConcentration": 0,
       "compute_initialConcentration": 1
     },

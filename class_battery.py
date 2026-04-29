@@ -29,17 +29,30 @@ class ActiveMaterial(Material):
         self.seiIonicConductivity = data['seiIonicConductivity']['value']
         self.seiElectronicConductivity = data['seiElectronicConductivity']['value']
         self.lplElectronicConductivity = data['lplElectronicConductivity']['value']
+        self.alpha_c = data['alpha_c']['value']
+        
 
         if 'seiOCP' in data:
             self.seiOCP = data['seiOCP']['value']
             self.seiKineticConstant = data['seiKineticConstant']['value']
             self.seiMass = data['seiMass']['value']
             self.seiDensity = data['seiDensity']['value']
+            
+        if 'seiAlpha_c' in data:
+            self.seiAlpha_c = data['seiAlpha_c']['value']
+        else:
+            self.seiAlpha_c = 1.0
+        
         if 'lplOCP' in data:
             self.lplOCP = data['lplOCP']['value']
             self.lplExchangeCurrent = data['lplExchangeCurrent']['value']
             self.lplMass = data['lplMass']['value']
             self.lplDensity = data['lplDensity']['value']
+        
+        if 'lplAlpha_c' in data:
+            self.lplAlpha_c = data['lplAlpha_c']['value']
+        else:
+            self.lplAlpha_c = 1.0
 
         self.kineticConstant = data['kineticConstant']
 

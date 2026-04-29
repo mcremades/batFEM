@@ -164,4 +164,11 @@ matplotlib.pyplot.plot(problem.t_list,problem.eps_e_a_list)
 matplotlib.pyplot.xlabel('Time [s]')
 matplotlib.pyplot.ylabel('Neg. electrode porosity [-]')
 
+matplotlib.pyplot.figure()
+matplotlib.pyplot.plot(problem.t_list,problem.c_sei_a_list)
+matplotlib.pyplot.plot(problem.t_list,problem.c_lpl_a_list)
+matplotlib.pyplot.xlabel('Time [s]')
+matplotlib.pyplot.ylabel('SEI concentration [mol/m3]')
+
+
 matplotlib.pyplot.show()

@@ -73,7 +73,7 @@
         },
         {
           "type":"MaxCycles",
-          "value":2,
+          "value":25,
           "go to":"CU_C0",
           "reset_count":true
         }
@@ -202,7 +202,7 @@
         },
         {
           "type":"MaxCycles",
-          "value":1,
+          "value":10,
           "go to":"End"
         }
         ]

@@ -30,6 +30,7 @@
                               "activationEnergy": {"unit":"J/mol", "value":43600},
                               "referenceTemperature": {"unit":"K", "value":296.15}
                             }},
+      "alpha_c": {"unit":"-","value":0.5},
       "maximumConcentration": {"unit": "mol/m3", "value": 48580.00},
       "initialConcentration": {"unit": "mol/m3", "value": 12630.80},
       "diffusionConstant": {"unit": "m**2/s", 

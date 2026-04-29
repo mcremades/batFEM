@@ -20,7 +20,7 @@
     "min step size": 1.0e-08,
     "max step size": 6.0e+01,
     "abs tolerance": 1.0e-06,
-    "rel tolerance": 1.0e-03
+    "rel tolerance": 1.0e-04
   },
   "output and storage": {
     "store level": 1,
@@ -29,9 +29,9 @@
   },
   "multiphysics": {
     "thermal_model": "lumped",
-    "solve_sei_a": 0,
+    "solve_sei_a": 1,
     "solve_sei_c": 0,
-    "solve_lpl_a": 0,
+    "solve_lpl_a": 1,
     "solve_lpl_c": 0
   }
 }

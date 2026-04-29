@@ -449,10 +449,10 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
 
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                F_R_film_a += ((self.M_sei_a[i]/self.rho_sei_a[i]) * self.j_sei_a_1[i]/self.a_s_a[i]/self.F) * self.R_film_a[i] * self.dx
+                F_R_film_a += ((self.M_sei_a[i]/self.rho_sei_a[i]) * self.j_sei_a_1[i]) * self.R_film_a[i] * self.dx
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                F_R_film_a += ((self.M_lpl_a[i]/self.rho_lpl_a[i]) * self.j_lpl_a_1[i]/self.a_s_a[i]/self.F) * self.R_film_a[i] * self.dx
+                F_R_film_a += ((self.M_lpl_a[i]/self.rho_lpl_a[i]) * self.j_lpl_a_1[i]) * self.R_film_a[i] * self.dx
 
         F_R_film = F_R_film_a
         
@@ -578,44 +578,50 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.eta_lpl_a = []
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                self.eta_sei_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_sei_a[i] * self.F * self.j_sei_a[i] - self.U_sei_a[i])
+                self.eta_sei_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_sei_a[i] * self.F * self.j_sei_a_1[i] - self.U_sei_a[i])
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                self.eta_lpl_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_lpl_a[i] * self.F * self.j_lpl_a[i] - self.U_lpl_a[i])
+                self.eta_lpl_a.append(self.phi_s_a_1 - self.phi_e_a_1 - self.Z_lpl_a[i] * self.F * self.j_lpl_a_1[i] - self.U_lpl_a[i])
 
         i_0_a = []
         i_0_c = []
 
         for i in range(len(self.eps_s_a)):
-            i_0_a.append(self.F * self.k_0_a * self.c_e_a_1 ** self.alpha * (self.c_s_a_max - split(self.c_s_sur_a_1)[i]) ** self.alpha * (split(self.c_s_sur_a_1)[i]) ** self.alpha)
+            i_0_a.append(self.F * self.k_0_a * self.c_e_a_1 ** self.alpha_a_c[i] * (self.c_s_a_max - split(self.c_s_sur_a_1)[i]) ** self.alpha_a_a[i] * (split(self.c_s_sur_a_1)[i]) ** self.alpha_a_c[i])
         for i in range(len(self.eps_s_c)):
-            i_0_c.append(self.F * self.k_0_c * self.c_e_c_1 ** self.alpha * (self.c_s_c_max - split(self.c_s_sur_c_1)[i]) ** self.alpha * (split(self.c_s_sur_c_1)[i]) ** self.alpha)
+            i_0_c.append(self.F * self.k_0_c * self.c_e_c_1 ** self.alpha_c_c[i] * (self.c_s_c_max - split(self.c_s_sur_c_1)[i]) ** self.alpha_c_a[i] * (split(self.c_s_sur_c_1)[i]) ** self.alpha_c_c[i])
+
+        i_0_sei_a = []
+        for i in range(len(self.eps_s_a)):
+            i_0_sei_a.append(self.F*self.k_0_sei_a[i])
+        i_0_lpl_a = []
+        for i in range(len(self.eps_s_a)):
+            i_0_lpl_a.append(self.i_0_lpl_a[i])
 
         E_a = []
         E_c = []
 
         for i in range(len(self.eps_s_a)):
-            E_a.append(exp(self.alpha * (self.F / (self.R * self.T_a_1)) * self.eta_a[i]) - exp(- self.alpha * (self.F / (self.R * self.T_a_1)) * self.eta_a[i]))
+            E_a.append(exp(self.alpha_a_a[i] * (self.F / (self.R * self.T_a_1)) * self.eta_a[i]) - exp(-self.alpha_a_c[i] * (self.F / (self.R * self.T_a_1)) * self.eta_a[i]))
         for i in range(len(self.eps_s_c)):
-            E_c.append(exp(self.alpha * (self.F / (self.R * self.T_c_1)) * self.eta_c[i]) - exp(- self.alpha * (self.F / (self.R * self.T_c_1)) * self.eta_c[i]))
+            E_c.append(exp(self.alpha_c_a[i] * (self.F / (self.R * self.T_c_1)) * self.eta_c[i]) - exp(-self.alpha_c_c[i] * (self.F / (self.R * self.T_c_1)) * self.eta_c[i]))
 
         E_a_sei = []
         E_a_lpl = []
 
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                E_a = exp(+self.alpha_sei_a * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i]) \
-                    - exp(-self.alpha_sei_c * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i])
-                E_a_sei.append(E_a)
+                E_sei = exp(+self.alpha_sei_a[i] * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i]) \
+                      - exp(-self.alpha_sei_c[i] * (self.F / (self.R * self.T_a_1)) * self.eta_sei_a[i])
+                E_a_sei.append(E_sei)
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
                 Mf_sei = self.M_sei_a[i]/self.rho_sei_a[i]
                 Mf_lpl = self.M_lpl_a[i]/self.rho_lpl_a[i]
                 eps_lpl = (Mf_lpl*self.c_lpl_a_1[i]/(Mf_sei*self.c_sei_a_1[i]+Mf_lpl*self.c_lpl_a_1[i]))
-
-                E_a = exp(+self.alpha_lpl_a * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]) * (1-exp(eps_lpl))\
-                    - exp(-self.alpha_lpl_c * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i])
-                E_a_lpl.append(E_a)
+                E_lpl = exp(+self.alpha_lpl_a[i] * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]) * (1-exp(-eps_lpl)) \
+                      - exp(-self.alpha_lpl_c[i] * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i])
+                E_a_lpl.append(E_lpl)
 
         self.q_a = 0
         self.q_a += self.sigma_a * (1/self.L_a**2) * inner(grad(self.phi_s_a_1), grad(self.phi_s_a_1))
@@ -739,12 +745,12 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         self.F_j_sei_a = 0
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
-                self.F_j_sei_a += self.j_sei_a_1[i] * self.j_sei_a[i] * self.dx + (self.i_0_sei_a[i]/self.F) * E_a_sei[i] * self.j_sei_a[i] * self.dx
+                self.F_j_sei_a += self.j_sei_a_1[i] * self.j_sei_a[i] * self.dx - (i_0_sei_a[i]/self.F) * E_a_sei[i] * self.j_sei_a[i] * self.dx
         # j_lpl
         self.F_j_lpl_a = 0
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                self.F_j_lpl_a += self.j_lpl_a_1[i] * self.j_lpl_a[i] * self.dx + (self.i_0_lpl_a[i]/self.F) * E_a_lpl[i] * self.j_lpl_a[i] * self.dx
+                self.F_j_lpl_a += self.j_lpl_a_1[i] * self.j_lpl_a[i] * self.dx - (i_0_lpl_a[i]/self.F) * E_a_lpl[i] * self.j_lpl_a[i] * self.dx
 
         # R_0
         F_R_film_a_0 = 0
@@ -1044,6 +1050,19 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
     def get_eps_e_a(self,x):
         self.u_1.vector()[:] = x
         return assemble(self.eps_e_a_1*self.dx)
+    
+    def get_c_sei_a(self,x):
+        if self.solve_sei_a:
+            self.u_1.vector()[:] = x
+            return assemble(self.c_sei_a_1[0]*self.dx)
+        else:
+            return 0
+    def get_c_lpl_a(self,x):
+        if self.solve_lpl_a:
+            self.u_1.vector()[:] = x
+            return assemble(self.c_lpl_a_1[0]*self.dx)
+        else:
+            return 0
     
 class RK_PE_PE_P2D(PE_PE_P2D, fatDAE.dolfin_interface.class_problem.UFL_Problem):
 

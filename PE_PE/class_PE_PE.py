@@ -45,9 +45,10 @@ class PE_PE(batFEM.class_battery_model.Model):
 
         self.k_list = []
         self.q_list = []
-
-        self.delta_film_a_list=[]
-        self.eps_e_a_list=[]
+        
+        self.delta_film_a_list=[]; self.eps_e_a_list=[]
+        self.c_sei_a_list=[]
+        self.c_lpl_a_list=[]
 
         # TODO split in more functions
         self.R_s_a = []; self.R_film_a_ini = []; self.U_sei_a = []; self.U_lpl_a = []
@@ -57,15 +58,22 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.i_0_lpl_a = []; self.M_lpl_a = []; self.rho_lpl_a = []
 
         self.eps_s_a = []; self.kappa_sei_a = []; self.sigma_sei_a = []; self.sigma_lpl_a = []
+        self.alpha_sei_a = []; self.alpha_sei_c = []
+        self.alpha_lpl_a = []; self.alpha_lpl_c = []
         self.eps_i_a = []
         self.eps_s_c = []; self.kappa_sei_c = []; self.sigma_sei_c = []
         self.eps_i_c = []
+        self.alpha_a_a = []; self.alpha_a_c = []
+        self.alpha_c_a = []; self.alpha_c_c = []
 
         for material in cell.negativeElectrode.composition:
             if material.active == 1:
                 self.R_s_a.append(Constant(material.particleRadius)); self.R_film_a_ini.append(Constant(material.filmRadius))
                 self.eps_s_a.append(Constant(material.volumeFraction))
-
+                alpha_a_c=Constant(material.alpha_c)
+                self.alpha_a_a.append(1-alpha_a_c)
+                self.alpha_a_c.append(0+alpha_a_c)
+                
                 if self.solve_sei_a or self.solve_lpl_a:
                     self.M_sei_a.append(Constant(material.seiMass))
                     self.rho_sei_a.append(Constant(material.seiDensity))
@@ -79,6 +87,12 @@ class PE_PE(batFEM.class_battery_model.Model):
                     self.rho_lpl_a.append(Constant(material.lplDensity))
 
                 self.kappa_sei_a.append(Constant(material.seiIonicConductivity))
+                alpha_sei_c=Constant(material.seiAlpha_c)
+                alpha_lpl_c=Constant(material.lplAlpha_c)
+                self.alpha_sei_a.append(1-alpha_sei_c)
+                self.alpha_lpl_a.append(1-alpha_lpl_c)
+                self.alpha_sei_c.append(0+alpha_sei_c)
+                self.alpha_lpl_c.append(0+alpha_lpl_c)
                 self.sigma_sei_a.append(Constant(material.seiElectronicConductivity))
                 self.sigma_lpl_a.append(Constant(material.lplElectronicConductivity))
             else:
@@ -88,7 +102,10 @@ class PE_PE(batFEM.class_battery_model.Model):
             if material.active == 1:
                 self.R_s_c.append(Constant(material.particleRadius)); self.R_film_c_ini.append(Constant(material.filmRadius))
                 self.eps_s_c.append(Constant(material.volumeFraction))
-                
+                alpha_c_c=Constant(material.alpha_c)
+                self.alpha_c_a.append(1-alpha_c_c)
+                self.alpha_c_c.append(0+alpha_c_c)
+
                 self.kappa_sei_c.append(Constant(material.seiIonicConductivity))
                 self.sigma_sei_c.append(Constant(material.seiElectronicConductivity))
             else:
@@ -290,8 +307,6 @@ class PE_PE(batFEM.class_battery_model.Model):
 
         self.T_ini = Constant(cell.initialTemperature); self.Q = Constant(cell.capacity); self.area = Constant(cell.area)
         self.T_ext = Constant(cell.exteriorTemperature)
-
-        self.alpha = Constant(0.5)
 
         self.a_s_a = []
         self.a_s_c = []

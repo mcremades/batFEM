@@ -234,6 +234,11 @@ class Model:
         eps_e_a = self.get_eps_e_a(x)
         self.eps_e_a_list.append(eps_e_a)
 
+        c_sei_a = self.get_c_sei_a(x)
+        self.c_sei_a_list.append(c_sei_a)
+        c_lpl_a = self.get_c_lpl_a(x)
+        self.c_lpl_a_list.append(c_lpl_a)
+
 
     def get_ene(self):
         return numpy.trapezoid(numpy.array(self.i_list)*numpy.array(self.v_list), x=self.t_list) / 3600.
