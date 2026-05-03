@@ -1,0 +1,50 @@
+{
+  "properties": {
+    "name": "SLPB 75106100 (Keil & Jossen 2020 ageing params)",
+    "format": "Pouch",
+    "area": {"unit": "m^2", "value": "compute"},
+    "volume": {"unit": "m^3", "value": "compute"},
+    "mass": {"unit": "kg", "value": "compute"},
+    "density": {"unit": "kg/m^3", "value": "compute"},
+    "nominalCapacity": {"unit": "Ah", "value": 7.5},
+    "minVoltage": {"unit": "V", "value": 2.5},
+    "maxVoltage": {"unit": "V", "value": 4.2},
+    "negative2positiveCapacityRatio": {"unit": "-", "value": "compute"},
+    "preformationLithium": {"unit": "moles", "value": "compute"},
+    "negativeFormationLithiumLoss": {"unit": "-", "value": "compute"},
+    "positiveFormationLithiumLoss": {"unit": "-", "value": "compute"},
+    "negativeElectrodeLayers": {"unit": "-", "value": 24},
+    "positiveElectrodeLayers": {"unit": "-", "value": 25},
+    "heatCapacity": {"unit": "J/(Kg*K)", "value": "compute"},
+    "heatConvectionCoefficient": {"unit": "W/(m**2*K)", "value":  5},
+    "heatConvectionArea": {"unit": "m**2", "value": 1.72e-02}
+  },
+  "negativeCurrentCollector": {
+    "file": "current_collectors/Cu.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 8.96e-03}
+  },
+  "negativeElectrode": {
+    "file": "electrodes/NE_Ecker2015_paper.json",
+    "thickness": {"unit": "m", "value": 7.3e-05},
+    "area": {"unit": "m^2", "value": 8.96e-03}
+  },
+  "separator": {
+    "file": "separators/Separator_Ecker2015.json",
+    "thickness": {"unit": "m", "value": 2.4e-05},
+    "area": {"unit": "m^2", "value": 8.96e-03}
+  },
+  "positiveElectrode": {
+    "file": "electrodes/PE_Ecker2015.json",
+    "thickness": {"unit": "m", "value": 5.4e-05},
+  "area": {"unit": "m^2", "value": 8.58e-03}
+  },
+  "positiveCurrentCollector": {
+    "file": "current_collectors/Al.json",
+    "thickness": {"unit": "m", "value": 2.1e-05},
+    "area": {"unit": "m^2", "value": 8.58e-03}
+  },
+  "electrolyte": {
+    "file": "electrolytes/LiPF6_EC:DMC_Ecker2015.json"
+  }
+}

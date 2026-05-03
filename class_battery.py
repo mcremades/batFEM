@@ -46,6 +46,7 @@ class ActiveMaterial(Material):
         if 'lplOCP' in data:
             self.lplOCP = data['lplOCP']['value']
             self.lplExchangeCurrent = data['lplExchangeCurrent']['value']
+            self.lplStripExchangeCurrent = data['lplStripExchangeCurrent']['value'] if 'lplStripExchangeCurrent' in data else self.lplExchangeCurrent
             self.lplMass = data['lplMass']['value']
             self.lplDensity = data['lplDensity']['value']
         
@@ -53,6 +54,11 @@ class ActiveMaterial(Material):
             self.lplAlpha_c = data['lplAlpha_c']['value']
         else:
             self.lplAlpha_c = 1.0
+
+        if 'lplSigmoidCoefficient' in data:
+            self.lplSigmoidCoefficient = data['lplSigmoidCoefficient']['value']
+        else:
+            self.lplSigmoidCoefficient = 1.0
 
         self.kineticConstant = data['kineticConstant']
 

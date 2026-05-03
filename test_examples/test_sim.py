@@ -24,15 +24,19 @@ parser.add_argument("battery_json", help = "")
 parser.add_argument("testplan_json", help = "")
 parser.add_argument("options_json", help = "")
 parser.add_argument("-output", help="")
+parser.add_argument("-restart", help="path to checkpoint .npz file", default=None)
 
 args = parser.parse_args()
 
 save_path = 'results/' + str(args.output) + '/'
 
-try:
-    os.stat(save_path); shutil.rmtree(save_path); os.mkdir(save_path)
-except:
-    os.mkdir(save_path)
+if args.restart:
+    os.makedirs(save_path, exist_ok=True)
+else:
+    try:
+        os.stat(save_path); shutil.rmtree(save_path); os.mkdir(save_path)
+    except:
+        os.mkdir(save_path)
 
 with open(args.battery_json) as data_file:
     battery_json = json.load(data_file)
@@ -95,10 +99,85 @@ def build(battery_json, testplan_json, options_json, save_path):
 
     problem.build_pvd(testplan); problem.setup_machine(testplan)
 
+    if args.restart:
+        import fatDAE.class_machine as fm
+        import batFEM.class_machine as bm
+
+        ckpt = numpy.load(args.restart)
+        chkpt_x     = ckpt['x']
+        chkpt_t     = float(ckpt['t'][0])
+        cycle_done  = int(ckpt['cycle'][0])
+
+        problem.x_0 = chkpt_x
+        problem.t_0 = chkpt_t
+        problem.t.value = chkpt_t
+        problem.u_0.vector()[:] = chkpt_x
+        problem.u_1.vector()[:] = chkpt_x
+        problem.M = problem.assemble_M(problem.M_form)
+
+        # Determine where the cycling loop should resume.
+        # If cycle_done >= 50 the killed run was about to start a checkup → CU_C0.
+        # Otherwise we resume mid-cycling, transitioning to CCC.
+        loop_target_name = 'CU_C0' if cycle_done >= 50 else 'CCC'
+        loop_target = next(s for s in testplan.states if s.name == loop_target_name)
+
+        # Build a Resume relaxation state: zero-current pause that runs for
+        # 60 s before transitioning to loop_target. This lets the DAE settle
+        # cleanly into the loaded x before the control flips to CCC's i_app.
+        dc0 = next(s for s in testplan.states if s.name == 'DC0')
+        resume = bm.ConstantCurrent(0.0, temperature=dc0.T_ext, name='Resume',
+                                    print_level=1)
+        trans = fm.Transition(resume, loop_target, reset=0, print_level=1)
+        trans.add_events(fm.Wait(60.0, 0.01, 0.01, print_level=1))
+        resume.add_transitions(trans)
+        testplan.add_states([resume])
+
+        # For each state, set the count = max existing dir number on disk so that
+        # exec_ini increments to (max+1) and writes the next entry to a NEW dir,
+        # never overwriting historical data. DC0 is special-cased because its
+        # numbering resets every 51-cycle batch via MaxCycles(reset=True), so we
+        # use cycle_done from the checkpoint instead.
+        def max_dir_index(state_name):
+            d = os.path.join(save_path, state_name)
+            if not os.path.isdir(d):
+                return 0
+            nums = [int(x) for x in os.listdir(d)
+                    if os.path.isdir(os.path.join(d, x)) and x.isdigit()]
+            return max(nums) if nums else 0
+
+        # DC0 numbering resets every 51-cycle batch via MaxCycles(reset=True).
+        # If cycle_done >= 50 the killed run had already exited DC0 → CU_C0,
+        # which means DC0's count was reset to 0 during exec_out. Otherwise we
+        # were mid-batch with DC0 count = cycle_done.
+        dc0_count = 0 if cycle_done >= 50 else cycle_done
+
+        for state in testplan.states:
+            if state.name == 'DC0':
+                state.params['number_states_count'] = dc0_count
+            elif state.name == 'Resume':
+                state.params['number_states_count'] = 0
+            else:
+                state.params['number_states_count'] = max_dir_index(state.name)
+
+        # Reported separately so the user can sanity-check the checkup index.
+        n_cu = max_dir_index('CU_DCC_2')
+
+        testplan.actual_state = resume
+
+        # Re-run setup_machine so t_dict/i_dict include the new Resume state.
+        problem.setup_machine(testplan)
+
+        print(f'Restarting from checkpoint: cycle {cycle_done}, t={chkpt_t:.1f}s, '
+              f'resume->Resume(60s)->{loop_target_name}, CU_DC0_2 count={n_cu}')
+
+    h_initial = options_json['timestepping properties']['initial step size']
+    if args.restart:
+        h_initial = max(options_json['timestepping properties']['min step size'] * 1e3, 1e-6)
+
     if options_json['time discretization']['mode'] == 'adaptive':
-        problem.solve(solver, state_machine=testplan, h=options_json['timestepping properties']['initial step size'], adp=True, print_level=1)
+        problem.solve(solver, state_machine=testplan, h=h_initial, adp=True, print_level=1)
     else:
-        problem.solve(solver, state_machine=testplan, h=options_json['timestepping properties']['initial step size'], adp=False, print_level=1)
+        problem.solve(solver, state_machine=testplan, h=h_initial, adp=False, print_level=1)
 
     # Post-process and plot
 

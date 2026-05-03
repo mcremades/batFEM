@@ -592,11 +592,15 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             i_0_c.append(self.F * self.k_0_c * self.c_e_c_1 ** self.alpha_c_c[i] * (self.c_s_c_max - split(self.c_s_sur_c_1)[i]) ** self.alpha_c_a[i] * (split(self.c_s_sur_c_1)[i]) ** self.alpha_c_c[i])
 
         i_0_sei_a = []
-        for i in range(len(self.eps_s_a)):
-            i_0_sei_a.append(self.F*self.k_0_sei_a[i])
+        if self.solve_sei_a:
+            for i in range(len(self.eps_s_a)):
+                i_0_sei_a.append(self.F*self.k_0_sei_a[i])
         i_0_lpl_a = []
-        for i in range(len(self.eps_s_a)):
-            i_0_lpl_a.append(self.i_0_lpl_a[i])
+        i_0_lst_a = []
+        if self.solve_lpl_a:
+            for i in range(len(self.eps_s_a)):
+                i_0_lpl_a.append(self.i_0_lpl_a[i])
+                i_0_lst_a.append(self.i_0_lst_a[i])
 
         E_a = []
         E_c = []
@@ -607,7 +611,8 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
             E_c.append(exp(self.alpha_c_a[i] * (self.F / (self.R * self.T_c_1)) * self.eta_c[i]) - exp(-self.alpha_c_c[i] * (self.F / (self.R * self.T_c_1)) * self.eta_c[i]))
 
         E_a_sei = []
-        E_a_lpl = []
+        E_a_lpl_strip = []
+        E_a_lpl_plate = []
 
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
@@ -616,12 +621,12 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
                 E_a_sei.append(E_sei)
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                Mf_sei = self.M_sei_a[i]/self.rho_sei_a[i]
                 Mf_lpl = self.M_lpl_a[i]/self.rho_lpl_a[i]
-                eps_lpl = (Mf_lpl*self.c_lpl_a_1[i]/(Mf_sei*self.c_sei_a_1[i]+Mf_lpl*self.c_lpl_a_1[i]))
-                E_lpl = exp(+self.alpha_lpl_a[i] * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]) * (1-exp(-eps_lpl)) \
-                      - exp(-self.alpha_lpl_c[i] * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i])
-                E_a_lpl.append(E_lpl)
+                # Sigmoid argument = absolute LPL volume fraction (K&J 2020 formulation).
+                # k_lpl scales the sensitivity; sigmoid → 0 only when c_lpl → 0.
+                eps_lpl_sigmoid = self.k_lpl_a[i] * Mf_lpl * self.c_lpl_a_1[i]
+                E_a_lpl_strip.append(exp(+self.alpha_lpl_a[i] * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]) * (1-exp(-eps_lpl_sigmoid)))
+                E_a_lpl_plate.append(exp(-self.alpha_lpl_c[i] * (self.F / (self.R * self.T_a_1)) * self.eta_lpl_a[i]))
 
         self.q_a = 0
         self.q_a += self.sigma_a * (1/self.L_a**2) * inner(grad(self.phi_s_a_1), grad(self.phi_s_a_1))
@@ -746,11 +751,13 @@ class PE_PE_P2D(batFEM.PE_PE.class_PE_PE.PE_PE):
         if self.solve_sei_a:
             for i in range(len(self.eps_s_a)):
                 self.F_j_sei_a += self.j_sei_a_1[i] * self.j_sei_a[i] * self.dx - (i_0_sei_a[i]/self.F) * E_a_sei[i] * self.j_sei_a[i] * self.dx
-        # j_lpl
+        # j_lpl — asymmetric exchange currents: i0_lpl for plating, i0_lst for stripping
         self.F_j_lpl_a = 0
         if self.solve_lpl_a:
             for i in range(len(self.eps_s_a)):
-                self.F_j_lpl_a += self.j_lpl_a_1[i] * self.j_lpl_a[i] * self.dx - (i_0_lpl_a[i]/self.F) * E_a_lpl[i] * self.j_lpl_a[i] * self.dx
+                self.F_j_lpl_a += self.j_lpl_a_1[i] * self.j_lpl_a[i] * self.dx \
+                                 - (i_0_lst_a[i]/self.F) * E_a_lpl_strip[i] * self.j_lpl_a[i] * self.dx \
+                                 + (i_0_lpl_a[i]/self.F) * E_a_lpl_plate[i] * self.j_lpl_a[i] * self.dx
 
         # R_0
         F_R_film_a_0 = 0

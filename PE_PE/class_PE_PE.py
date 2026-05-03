@@ -55,7 +55,7 @@ class PE_PE(batFEM.class_battery_model.Model):
         self.R_s_c = []; self.R_film_c_ini = []
 
         self.k_0_sei_a = []; self.M_sei_a = []; self.rho_sei_a = []
-        self.i_0_lpl_a = []; self.M_lpl_a = []; self.rho_lpl_a = []
+        self.i_0_lpl_a = []; self.i_0_lst_a = []; self.M_lpl_a = []; self.rho_lpl_a = []; self.k_lpl_a = []
 
         self.eps_s_a = []; self.kappa_sei_a = []; self.sigma_sei_a = []; self.sigma_lpl_a = []
         self.alpha_sei_a = []; self.alpha_sei_c = []
@@ -83,8 +83,10 @@ class PE_PE(batFEM.class_battery_model.Model):
                 if self.solve_lpl_a:
                     self.U_lpl_a.append(Constant(material.lplOCP))
                     self.i_0_lpl_a.append(Constant(material.lplExchangeCurrent))
+                    self.i_0_lst_a.append(Constant(material.lplStripExchangeCurrent))
                     self.M_lpl_a.append(Constant(material.lplMass))
                     self.rho_lpl_a.append(Constant(material.lplDensity))
+                    self.k_lpl_a.append(Constant(material.lplSigmoidCoefficient))
 
                 self.kappa_sei_a.append(Constant(material.seiIonicConductivity))
                 alpha_sei_c=Constant(material.seiAlpha_c)

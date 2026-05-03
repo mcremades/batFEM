@@ -82,6 +82,9 @@ def build_machine(json_1,print_level=0):
             elif event['type'] == 'MaxCycles':
                 evt = fatDAE.class_machine.MaxCycles(event['value'])
 
+            elif event['type'] == 'EveryNCyclesWait':
+                evt = fatDAE.class_machine.EveryNCyclesWait(event['n'], event['time'], event['tol_a'], event['tol_r'], print_level=print_level)
+
             aux.add_events(evt)
 
             steps_dict[step['name']].add_transitions(aux)

@@ -189,10 +189,25 @@ class Model:
                 self.v_dict[state.name].append([])
                 self.k_dict[state.name].append([])
 
+        self._ckpt_x = None
+        self._ckpt_t = None
+
+    def _save_checkpoint(self, cycle):
+        if self._ckpt_x is None:
+            return
+        ckpt_dir = os.path.join(self.save_path, 'checkpoints')
+        os.makedirs(ckpt_dir, exist_ok=True)
+        path = os.path.join(ckpt_dir, f'cycle_{cycle:04d}.npz')
+        numpy.savez(path, x=self._ckpt_x, t=numpy.array([self._ckpt_t]), cycle=numpy.array([cycle]))
+        print(f'Checkpoint saved: {path}')
+
     def store(self, t, x, state_name=None, state_number=0):
-        
+
+        self._ckpt_x = numpy.array(x)
+        self._ckpt_t = t
+
         if state_name is not None:
-            self.t_dict[state_name][state_number].append(t); 
+            self.t_dict[state_name][state_number].append(t);
         self.t_list.append(t)
         
         
@@ -301,30 +316,55 @@ class Model:
         plt.xlabel('Time [s]')
         plt.ylabel('Voltage [V]')
 
+    def _flush_list(self, attr, path):
+        """Append all-but-last elements to path, then truncate list to last element."""
+        lst = getattr(self, attr)
+        if len(lst) > 1:
+            mode = 'a' if os.path.exists(path) else 'w'
+            with open(path, mode) as fh:
+                numpy.savetxt(fh, lst[:-1])
+        setattr(self, attr, lst[-1:] if lst else [])
+
     def write(self, write_level, state_name=None, state_number=0):
 
-        numpy.savetxt(os.path.join(self.save_path,'time.txt'), self.t_list)
-        numpy.savetxt(os.path.join(self.save_path,'current.txt'), self.i_list)
-        numpy.savetxt(os.path.join(self.save_path,'voltage.txt'), self.v_list)
-        numpy.savetxt(os.path.join(self.save_path,'temperature.txt'), self.k_list)
+        base = self.save_path
+        self._flush_list('t_list',    os.path.join(base, 'time.txt'))
+        self._flush_list('i_list',    os.path.join(base, 'current.txt'))
+        self._flush_list('v_list',    os.path.join(base, 'voltage.txt'))
+        self._flush_list('k_list',    os.path.join(base, 'temperature.txt'))
+
+        # ce_avg lists are never written to disk; truncate to prevent unbounded growth
+        for attr in ('ce_avg_a_list', 'ce_avg_s_list', 'ce_avg_c_list'):
+            lst = getattr(self, attr)
+            setattr(self, attr, lst[-1:] if lst else [])
 
         if write_level > 0:
 
-            numpy.savetxt(os.path.join(self.save_path,'xs_avg_a.txt'), self.xs_avg_a_list)
-            numpy.savetxt(os.path.join(self.save_path,'xs_avg_c.txt'), self.xs_avg_c_list)
-            numpy.savetxt(os.path.join(self.save_path,'xs_sur_a.txt'), self.xs_sur_a_list)
-            numpy.savetxt(os.path.join(self.save_path,'xs_sur_c.txt'), self.xs_sur_c_list)
+            self._flush_list('xs_avg_a_list',     os.path.join(base, 'xs_avg_a.txt'))
+            self._flush_list('xs_avg_c_list',     os.path.join(base, 'xs_avg_c.txt'))
+            self._flush_list('xs_sur_a_list',     os.path.join(base, 'xs_sur_a.txt'))
+            self._flush_list('xs_sur_c_list',     os.path.join(base, 'xs_sur_c.txt'))
+            self._flush_list('delta_film_a_list', os.path.join(base, 'delta_film_a.txt'))
+            self._flush_list('eps_e_a_list',      os.path.join(base, 'eps_e_a.txt'))
+            self._flush_list('c_sei_a_list',      os.path.join(base, 'c_sei_a.txt'))
+            self._flush_list('c_lpl_a_list',      os.path.join(base, 'c_lpl_a.txt'))
 
-            numpy.savetxt(os.path.join(self.save_path,'delta_film_a.txt'), self.delta_film_a_list)
-            numpy.savetxt(os.path.join(self.save_path,'eps_e_a.txt'), self.eps_e_a_list)
+            if state_name is not None:
+                dir_path = os.path.join(base, state_name, str(state_number))
+                os.makedirs(dir_path, exist_ok=True)
 
-            dir_path = os.path.join(self.save_path, state_name, str(state_number))
-            os.makedirs(dir_path, exist_ok=True)
-        
-            numpy.savetxt(os.path.join(dir_path,'time.txt'), self.t_dict[state_name][state_number])
-            numpy.savetxt(os.path.join(dir_path,'current.txt'), self.i_dict[state_name][state_number])
-            numpy.savetxt(os.path.join(dir_path,'voltage.txt'), self.v_dict[state_name][state_number])
-            numpy.savetxt(os.path.join(dir_path,'temperature.txt'), self.k_dict[state_name][state_number])
+                numpy.savetxt(os.path.join(dir_path, 'time.txt'),        self.t_dict[state_name][state_number])
+                numpy.savetxt(os.path.join(dir_path, 'current.txt'),     self.i_dict[state_name][state_number])
+                numpy.savetxt(os.path.join(dir_path, 'voltage.txt'),     self.v_dict[state_name][state_number])
+                numpy.savetxt(os.path.join(dir_path, 'temperature.txt'), self.k_dict[state_name][state_number])
+
+                self.t_dict[state_name][state_number] = []
+                self.i_dict[state_name][state_number] = []
+                self.v_dict[state_name][state_number] = []
+                self.k_dict[state_name][state_number] = []
+
+                if state_name == 'DC0':
+                    self._save_checkpoint(state_number)
 
 
     def tstep_ie(self, h=10, i_app = 30.0):

@@ -1,0 +1,69 @@
+{
+  "initial values":
+  {
+    "SOC":0.0,
+    "exterior temperature": 298.15
+  },
+  "steps":[
+    {
+      "name":"CCC",
+      "type":"CC",
+      "value": 1.0,
+      "temperature": 283.15,
+      "events":[
+        {
+          "type":"Voltage",
+          "value":4.1,
+          "tol_a":1.0e-2,"tol_r":1.0e-2,
+          "go to":"CCV"
+        }
+        ]
+    },
+    {
+      "name":"CCV",
+      "type":"CV",
+      "value": 4.1,
+      "temperature": 283.15,
+      "events":[
+        {
+          "type":"Current",
+          "value":0.05,
+          "tol_a":1.0e-2,"tol_r":1.0e-2,
+          "go to":"DCC"
+        }
+        ]
+    },
+    {
+      "name":"DCC",
+      "type":"CC",
+      "value": -1.0,
+      "temperature": 283.15,
+      "events":[
+        {
+          "type":"Voltage",
+          "value":2.8,
+          "tol_a":1.0e-2,"tol_r":1.0e-2,
+          "go to":"DC0"
+        }
+        ]
+    },
+    {
+      "name":"DC0",
+      "type":"Pause",
+      "temperature": 283.15,
+      "events":[
+        {
+          "type":"Time",
+          "value":1800,
+          "tol_a":1.0e-2,"tol_r":1.0e-2,
+          "go to":"CCC"
+        },
+        {
+          "type":"MaxCycles",
+          "value":100,
+          "go to":"End"
+        }
+        ]
+    }
+  ]
+}
